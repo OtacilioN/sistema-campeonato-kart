@@ -1,0 +1,32 @@
+<!-- @dsCard group="Brand" viewport="700x200" name="Race accents" subtitle="Checkered flag + diagonal speed stripe — used only as small accents" -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; background: var(--surface); font-family: var(--font-ui); padding: 22px; display:flex; gap: 22px; flex-wrap: wrap; align-items: center; }
+  .demo { display:flex; flex-direction:column; gap:8px; align-items:center; }
+  .lbl { font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); }
+  /* checkered flag chip */
+  .check { width: 56px; height: 56px; border-radius: var(--radius-sm); background-color:#fff; border:1px solid var(--border-light);
+    background-image:
+      linear-gradient(45deg, #111 25%, transparent 25%, transparent 75%, #111 75%),
+      linear-gradient(45deg, #111 25%, transparent 25%, transparent 75%, #111 75%);
+    background-size: 18px 18px; background-position: 0 0, 9px 9px; }
+  /* diagonal speed stripe strip */
+  .stripe { width: 220px; height: 56px; border-radius: var(--radius-md); background:#070707; overflow:hidden; position:relative; }
+  .stripe::after { content:""; position:absolute; inset:0;
+    background: repeating-linear-gradient(115deg, transparent 0 14px, rgba(225,6,0,.9) 14px 18px); }
+  .podium { width: 220px; height: 56px; border-radius: var(--radius-md); background:#fff; border:1px solid var(--border-light); position:relative; overflow:hidden; display:flex; align-items:center; padding-left:14px; font-family:var(--font-display); font-weight:700; font-size:22px; }
+  .podium::before { content:""; position:absolute; right:0; top:0; bottom:0; width:60px;
+    background-image: linear-gradient(45deg,#111 25%,transparent 25%,transparent 75%,#111 75%), linear-gradient(45deg,#111 25%,transparent 25%,transparent 75%,#111 75%);
+    background-size:14px 14px; background-position:0 0,7px 7px; opacity:.12; }
+</style>
+</head>
+<body>
+  <div class="demo"><div class="check"></div><span class="lbl">checkered flag</span></div>
+  <div class="demo"><div class="stripe"></div><span class="lbl">diagonal speed stripe</span></div>
+  <div class="demo"><div class="podium">Pódio atual</div><span class="lbl">faint checker accent</span></div>
+</body>
+</html>

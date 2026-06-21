@@ -1,0 +1,27 @@
+<!-- @dsCard group="Colors" viewport="700x190" name="Neutrals & surfaces" subtitle="Light base, surfaces, borders and text greys" -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; background: var(--off-white); font-family: var(--font-ui); padding: 20px; }
+  .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+  .sw { border-radius: var(--radius-md); border: 1px solid var(--border-light); overflow: hidden; background: #fff; }
+  .chip { height: 60px; }
+  .meta { padding: 8px 10px; }
+  .name { font-size: 12px; font-weight: 600; color: var(--text-primary); }
+  .hex { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+</style>
+</head>
+<body>
+<div class="grid">
+  <div class="sw"><div class="chip" style="background:#FFFFFF"></div><div class="meta"><div class="name">White / Surface</div><div class="hex">#FFFFFF</div></div></div>
+  <div class="sw"><div class="chip" style="background:#F7F7F8"></div><div class="meta"><div class="name">Off White</div><div class="hex">#F7F7F8</div></div></div>
+  <div class="sw"><div class="chip" style="background:#F2F2F4"></div><div class="meta"><div class="name">Surface Muted</div><div class="hex">#F2F2F4</div></div></div>
+  <div class="sw"><div class="chip" style="background:#E2E2E6"></div><div class="meta"><div class="name">Border Light</div><div class="hex">#E2E2E6</div></div></div>
+  <div class="sw"><div class="chip" style="background:#C9C9D1"></div><div class="meta"><div class="name">Border Strong</div><div class="hex">#C9C9D1</div></div></div>
+  <div class="sw"><div class="chip" style="background:#111111"></div><div class="meta"><div class="name">Text Primary</div><div class="hex">#111111</div></div></div>
+</div>
+</body>
+</html>

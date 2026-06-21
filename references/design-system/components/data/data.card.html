@@ -1,0 +1,62 @@
+<!-- @dsCard group="Components" viewport="700x380" name="Data: stats, ranking, times" subtitle="StatTile grid, RankRow podium and TimeValue numerics" -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" href="../../styles.css" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>
+  body { margin: 0; background: var(--off-white); font-family: var(--font-ui); padding: 22px; }
+  .lbl { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); margin: 0 0 8px; }
+  .statgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+  .card { background: var(--surface); border: 1px solid var(--border-light); border-radius: var(--radius-card); box-shadow: var(--shadow-card); padding: 8px 16px; }
+  .divider { border-top: 1px solid var(--border-light); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+  const { StatTile, RankRow, TimeValue } = window.VelozesDesignSystem_32dd15;
+  const I = (n, s=18) => <i data-lucide={n} style={{ width: s, height: s }}></i>;
+  function Demo() {
+    const drivers = [
+      { p:1, n:"Lucas Almeida", m:"PR", pts:316 },
+      { p:2, n:"Bruno Costa", m:"SP", pts:283 },
+      { p:3, n:"Felipe Martins", m:"MG", pts:240 },
+    ];
+    return (
+      <div>
+        <p className="lbl">StatTile</p>
+        <div className="statgrid">
+          <StatTile label="Melhor volta" value="00:48.732" icon={I("timer")} sub="8ª etapa" />
+          <StatTile label="Total de pontos" value={87} unit="pts" valueSize="l" />
+          <StatTile label="Diferença p/ anterior" value={2.318} valueTone="negative" sub="vs. piloto à frente" />
+        </div>
+        <p className="lbl">RankRow — pódio</p>
+        <div className="card">
+          {drivers.map((d, i) => (
+            <div key={d.p} className={i ? "divider" : ""}>
+              <RankRow position={d.p} name={d.n} meta={d.m} points={d.pts} podium trailing={I("chevron-right", 18)} />
+            </div>
+          ))}
+        </div>
+        <p className="lbl" style={{ marginTop: 20 }}>TimeValue</p>
+        <div style={{ display: "flex", gap: 24, alignItems: "baseline", flexWrap: "wrap" }}>
+          <TimeValue value="00:49.352" size="l" />
+          <TimeValue value={87} unit="pts" size="m" />
+          <TimeValue value={2.318} sign size="m" tone="negative" />
+          <TimeValue value={-0.412} sign size="m" tone="positive" />
+        </div>
+      </div>
+    );
+  }
+  ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+  setTimeout(() => window.lucide && window.lucide.createIcons(), 60);
+</script>
+</body>
+</html>

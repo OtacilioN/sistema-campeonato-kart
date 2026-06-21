@@ -1,0 +1,21 @@
+<!-- @dsCard group="Type" viewport="700x240" name="Interface — Inter" subtitle="Body L/M/S and uppercase caption for UI text" -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; background: var(--surface); font-family: var(--font-ui); padding: 24px; }
+  .spec { display: flex; align-items: baseline; gap: 16px; padding: 8px 0; border-bottom: 1px solid var(--border-light); }
+  .spec:last-child { border-bottom: 0; }
+  .tag { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); width: 130px; flex: none; }
+  .u { color: var(--text-primary); }
+</style>
+</head>
+<body>
+  <div class="spec"><span class="tag">Body L · 16/24 · 400</span><span class="u" style="font-size:16px;line-height:24px">Acompanhe o desempenho dos pilotos na temporada.</span></div>
+  <div class="spec"><span class="tag">Body M · 14/20 · 400</span><span class="u" style="font-size:14px;line-height:20px">Datas e locais sujeitos a alteração.</span></div>
+  <div class="spec"><span class="tag">Body S · 12/16 · 400</span><span class="u" style="font-size:12px;line-height:16px">Validação por nome completo + UF e melhor volta.</span></div>
+  <div class="spec"><span class="tag">Caption · 11/14 · 500</span><span class="u" style="font-size:11px;line-height:14px;font-weight:500;letter-spacing:.06em;text-transform:uppercase">Próximo evento</span></div>
+</body>
+</html>

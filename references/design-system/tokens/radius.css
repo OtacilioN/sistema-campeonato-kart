@@ -1,0 +1,17 @@
+:root {
+  /* ===== Corner radii ===== */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-pill: 999px;
+
+  /* Component aliases */
+  --radius-card: 16px;
+  --radius-button: 12px;
+  --radius-input: 12px;
+  --radius-chip: 999px;
+  --radius-modal: 24px;
+  --radius-list: 12px;
+}

@@ -1,0 +1,33 @@
+:root {
+  /* ===== Font families ===== */
+  --font-display: 'Barlow Condensed', system-ui, sans-serif;
+  --font-ui: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
+
+  /* ===== Heading scale (display font) ===== */
+  --heading-xl-size: 32px;   --heading-xl-lh: 38px;   --heading-xl-weight: 700;
+  --heading-l-size: 28px;    --heading-l-lh: 34px;    --heading-l-weight: 700;
+  --heading-m-size: 24px;    --heading-m-lh: 30px;    --heading-m-weight: 600;
+  --heading-s-size: 20px;    --heading-s-lh: 26px;    --heading-s-weight: 600;
+
+  /* ===== Body scale (UI font) ===== */
+  --body-l-size: 16px;   --body-l-lh: 24px;   --body-l-weight: 400;
+  --body-m-size: 14px;   --body-m-lh: 20px;   --body-m-weight: 400;
+  --body-s-size: 12px;   --body-s-lh: 16px;   --body-s-weight: 400;
+  --caption-size: 11px;  --caption-lh: 14px;  --caption-weight: 500;
+
+  /* ===== Numeric scale (mono / tabular) ===== */
+  --num-l-size: 32px;   --num-l-lh: 38px;   --num-l-weight: 700;
+  --num-m-size: 20px;   --num-m-lh: 26px;   --num-m-weight: 600;
+  --num-s-size: 14px;   --num-s-lh: 20px;   --num-s-weight: 500;
+
+  /* Tracking */
+  --tracking-display: -0.01em;
+  --tracking-label: 0.06em;  /* uppercase eyebrow / overline */
+}
+
+/* Tabular numbers utility for any mono data */
+.velozes-tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}

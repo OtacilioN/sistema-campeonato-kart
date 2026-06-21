@@ -1,0 +1,30 @@
+<!-- @dsCard group="Brand" viewport="700x300" name="Logo & wordmark" subtitle="Championship emblem and the Velozes product wordmark" -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; background: var(--off-white); font-family: var(--font-ui); padding: 22px; }
+  .grid { display: grid; grid-template-columns: 220px 1fr; gap: 18px; }
+  .panel { border-radius: var(--radius-lg); border: 1px solid var(--border-light); overflow: hidden; }
+  .emblem { background: #070707; display:flex; align-items:center; justify-content:center; padding: 18px; }
+  .emblem img { max-width: 100%; max-height: 200px; display:block; }
+  .marks { display:flex; flex-direction:column; }
+  .mk { flex:1; display:flex; align-items:center; justify-content:center; gap:10px; padding: 18px; }
+  .mk.dark { background:#070707; }
+  .mk.light { background:#fff; border-bottom: 1px solid var(--border-light); }
+  .word { font-family: var(--font-display); font-weight: 800; font-style: italic; font-size: 40px; letter-spacing: -0.02em; }
+  .tick { width: 6px; height: 34px; background: var(--brand-red); border-radius: 2px; transform: skewX(-12deg); }
+</style>
+</head>
+<body>
+<div class="grid">
+  <div class="panel emblem"><img src="../assets/velozes-logo.jpeg" alt="Velocidade Máxima ou Quase" /></div>
+  <div class="panel marks">
+    <div class="mk light"><span class="tick"></span><span class="word" style="color:#111">Velozes</span></div>
+    <div class="mk dark"><span class="tick"></span><span class="word" style="color:#fff">Velozes</span></div>
+  </div>
+</div>
+</body>
+</html>

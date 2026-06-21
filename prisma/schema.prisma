@@ -1,0 +1,137 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Pilot {
+  id          String          @id @default(cuid())
+  fullName    String
+  uf          String
+  displayName String?
+  slug        String          @unique
+  active      Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  results     BatteryResult[]
+  lapToLaps   LapToLap[]
+
+  @@unique([fullName, uf])
+}
+
+model Season {
+  id        String    @id @default(cuid())
+  year      Int
+  period    Int
+  name      String
+  slug      String    @unique
+  active    Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  batteries Battery[]
+
+  @@unique([year, period])
+}
+
+model Battery {
+  id            String          @id @default(cuid())
+  seasonId      String
+  number        Int
+  label         String
+  monthLabel    String?
+  scheduledAt   DateTime?
+  status        BatteryStatus   @default(PLANNED)
+  locationName  String          @default("Circuito Internacional Paladino")
+  city          String          @default("Conde")
+  uf            String          @default("PB")
+  parsedPayload Json?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  season        Season          @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  results       BatteryResult[]
+
+  @@unique([seasonId, number])
+}
+
+model BatteryResult {
+  id               String        @id @default(cuid())
+  batteryId        String
+  pilotId          String
+  pilotNumber      Int?
+  position         Int?
+  status           ResultStatus  @default(CLASSIFIED)
+  bestLapNumber    Int?
+  bestLapTime      String?
+  totalTime        String?
+  gapToLeader      String?
+  gapToPrevious    String?
+  lastLapTime      String?
+  totalLaps        Int?
+  averageSpeed     Decimal?
+  positionPoints   Int           @default(0)
+  poleBonus        Int           @default(0)
+  bestLapBonus     Int           @default(0)
+  penaltyPoints    Int           @default(0)
+  finalPoints      Int           @default(0)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  battery          Battery       @relation(fields: [batteryId], references: [id], onDelete: Cascade)
+  pilot            Pilot         @relation(fields: [pilotId], references: [id], onDelete: Cascade)
+  lapToLap         LapToLap?
+
+  @@unique([batteryId, pilotId])
+}
+
+model LapToLap {
+  id                       String        @id @default(cuid())
+  batteryResultId          String        @unique
+  pilotId                  String
+  validationStatus         LapValidation @default(VALIDATED)
+  extractedPilotName       String?
+  extractedPilotNumber     Int?
+  extractedBestLapTime     String?
+  extractedBestLapNumber   Int?
+  extractedTotalTime       String?
+  parsedPayload            Json?
+  createdAt                DateTime      @default(now())
+  updatedAt                DateTime      @updatedAt
+  batteryResult            BatteryResult @relation(fields: [batteryResultId], references: [id], onDelete: Cascade)
+  pilot                    Pilot         @relation(fields: [pilotId], references: [id], onDelete: Cascade)
+  laps                     Lap[]
+}
+
+model Lap {
+  id              String    @id @default(cuid())
+  lapToLapId      String
+  lapNumber       Int
+  lapTime         String
+  deltaBestLap    String?
+  deltaCategory   String?
+  accumulatedTime String?
+  averageSpeed    Decimal?
+  createdAt       DateTime  @default(now())
+  lapToLap        LapToLap  @relation(fields: [lapToLapId], references: [id], onDelete: Cascade)
+
+  @@unique([lapToLapId, lapNumber])
+}
+
+enum BatteryStatus {
+  PLANNED
+  IN_REVIEW
+  CONFIRMED
+  CANCELED
+}
+
+enum ResultStatus {
+  CLASSIFIED
+  NC
+  ABSENT
+}
+
+enum LapValidation {
+  VALIDATED
+  REJECTED
+}

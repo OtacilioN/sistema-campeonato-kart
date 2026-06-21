@@ -1,0 +1,53 @@
+:root {
+  /* ===== Brand ===== */
+  --brand-red: #E10600;
+  --brand-red-dark: #A80000;
+  --brand-red-soft: #FFE8E6;
+
+  /* ===== Racing neutrals (dark) ===== */
+  --racing-black: #070707;
+  --carbon: #121212;
+  --graphite: #242424;
+
+  /* ===== Light base ===== */
+  --white: #FFFFFF;
+  --off-white: #F7F7F8;
+  --surface: #FFFFFF;
+  --surface-muted: #F2F2F4;
+
+  /* ===== Borders ===== */
+  --border-light: #E2E2E6;
+  --border-strong: #C9C9D1;
+
+  /* ===== Text ===== */
+  --text-primary: #111111;
+  --text-secondary: #55555F;
+  --text-muted: #7A7A85;
+  --text-inverse: #FFFFFF;
+
+  /* ===== Semantic — status ===== */
+  --success: #16A34A;
+  --success-soft: #E8F8EE;
+  --warning: #F59E0B;
+  --warning-soft: #FFF4DB;
+  --danger: #DC2626;
+  --danger-soft: #FDECEC;
+  --info: #2563EB;
+  --info-soft: #EAF1FF;
+
+  /* ===== Semantic aliases (use these in components) ===== */
+  --action-primary: var(--brand-red);
+  --action-primary-hover: var(--brand-red-dark);
+  --action-dark: var(--racing-black);
+  --bg-app: var(--off-white);
+  --bg-surface: var(--surface);
+  --bg-surface-muted: var(--surface-muted);
+  --text-on-brand: var(--text-inverse);
+
+  /* Data-viz */
+  --chart-line: var(--brand-red);
+  --chart-grid: var(--border-light);
+  --chart-positive: #16A34A;
+  --chart-negative: #DC2626;
+  --chart-baseline: var(--border-strong);
+}

@@ -1,0 +1,26 @@
+<!-- @dsCard group="Colors" viewport="700x190" name="Semantic / status" subtitle="Success, warning, danger, info — each with a soft tint" -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; background: var(--off-white); font-family: var(--font-ui); padding: 20px; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .pair { border-radius: var(--radius-md); border: 1px solid var(--border-light); overflow: hidden; }
+  .solid { height: 50px; display:flex; align-items:flex-end; padding: 6px 10px; color:#fff; font-size:12px; font-weight:600; }
+  .soft { height: 30px; }
+  .meta { padding: 7px 10px; background:#fff; }
+  .name { font-size: 12px; font-weight: 600; color: var(--text-primary); }
+  .hex { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); margin-top:2px; }
+</style>
+</head>
+<body>
+<div class="grid">
+  <div class="pair"><div class="solid" style="background:#16A34A">Success</div><div class="soft" style="background:#E8F8EE"></div><div class="meta"><div class="name">Validado</div><div class="hex">#16A34A · #E8F8EE</div></div></div>
+  <div class="pair"><div class="solid" style="background:#F59E0B">Warning</div><div class="soft" style="background:#FFF4DB"></div><div class="meta"><div class="name">Atenção</div><div class="hex">#F59E0B · #FFF4DB</div></div></div>
+  <div class="pair"><div class="solid" style="background:#DC2626">Danger</div><div class="soft" style="background:#FDECEC"></div><div class="meta"><div class="name">Erro / penalização</div><div class="hex">#DC2626 · #FDECEC</div></div></div>
+  <div class="pair"><div class="solid" style="background:#2563EB">Info</div><div class="soft" style="background:#EAF1FF"></div><div class="meta"><div class="name">Informativo</div><div class="hex">#2563EB · #EAF1FF</div></div></div>
+</div>
+</body>
+</html>

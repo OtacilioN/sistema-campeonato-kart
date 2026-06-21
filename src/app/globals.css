@@ -1,0 +1,347 @@
+@import "tailwindcss";
+
+:root {
+  --brand-red: #e10600;
+  --brand-red-dark: #a80000;
+  --brand-red-soft: #ffe8e6;
+  --racing-black: #070707;
+  --carbon: #121212;
+  --graphite: #242424;
+  --white: #ffffff;
+  --off-white: #f7f7f8;
+  --surface-muted: #f2f2f4;
+  --border-light: #e2e2e6;
+  --border-strong: #c9c9d1;
+  --text-primary: #111111;
+  --text-secondary: #55555f;
+  --text-muted: #7a7a85;
+  --success: #16a34a;
+  --warning: #f59e0b;
+  --danger: #dc2626;
+  --font-display: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-ui: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", "SFMono-Regular", ui-monospace, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--off-white);
+  color: var(--text-primary);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    linear-gradient(135deg, rgba(225, 6, 0, 0.08) 0 10%, transparent 10% 100%),
+    var(--off-white);
+  font-family: var(--font-ui);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.topbar {
+  align-items: center;
+  background: rgba(247, 247, 248, 0.92);
+  border-bottom: 1px solid var(--border-light);
+  backdrop-filter: blur(12px);
+  display: flex;
+  height: 60px;
+  justify-content: space-between;
+  left: 0;
+  padding: 0 18px;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: 20;
+}
+
+.wordmark {
+  color: var(--racing-black);
+  display: grid;
+  font-family: var(--font-display);
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+
+.wordmark span {
+  font-size: 14px;
+}
+
+.wordmark strong {
+  font-size: 20px;
+}
+
+.admin-lock {
+  align-items: center;
+  background: var(--racing-black);
+  border-radius: 12px;
+  color: var(--white);
+  display: inline-flex;
+  height: 40px;
+  justify-content: center;
+  width: 40px;
+}
+
+.bottom-nav {
+  background: rgba(255, 255, 255, 0.96);
+  border-top: 1px solid var(--border-light);
+  bottom: 0;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.08);
+  display: grid;
+  gap: 4px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  left: 0;
+  padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+  position: fixed;
+  right: 0;
+  z-index: 20;
+}
+
+.bottom-nav a {
+  align-items: center;
+  border-radius: 12px;
+  color: var(--text-secondary);
+  display: grid;
+  font-size: 11px;
+  gap: 2px;
+  justify-items: center;
+  min-height: 48px;
+}
+
+.bottom-nav a:hover {
+  background: var(--surface-muted);
+  color: var(--racing-black);
+}
+
+.app-shell {
+  margin: 0 auto;
+  max-width: 920px;
+  min-height: 100vh;
+  padding: 84px 16px 104px;
+}
+
+.page-header {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.eyebrow {
+  color: var(--brand-red);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+h1 {
+  font-size: clamp(36px, 8vw, 76px);
+  max-width: 760px;
+}
+
+h2 {
+  font-size: 28px;
+}
+
+h3 {
+  font-size: 19px;
+}
+
+.page-header p:not(.eyebrow),
+.muted {
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.grid {
+  display: grid;
+  gap: 16px;
+}
+
+.grid.two {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.card {
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 18px;
+}
+
+.card.dark {
+  background: var(--racing-black);
+  border-color: var(--racing-black);
+  color: var(--white);
+}
+
+.card.dark .muted {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.stat {
+  align-items: end;
+  display: flex;
+  gap: 8px;
+}
+
+.stat strong {
+  font-family: var(--font-mono);
+  font-size: 42px;
+  line-height: 1;
+}
+
+.stat span {
+  color: var(--text-muted);
+  font-size: 13px;
+  padding-bottom: 6px;
+}
+
+.pill {
+  align-items: center;
+  background: var(--brand-red-soft);
+  border-radius: 999px;
+  color: var(--brand-red-dark);
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 800;
+  gap: 6px;
+  padding: 6px 10px;
+  text-transform: uppercase;
+}
+
+.button {
+  align-items: center;
+  background: var(--brand-red);
+  border: 0;
+  border-radius: 12px;
+  color: var(--white);
+  display: inline-flex;
+  font-weight: 800;
+  gap: 8px;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 16px;
+}
+
+.button.secondary {
+  background: var(--racing-black);
+}
+
+.table {
+  display: grid;
+  gap: 8px;
+}
+
+.row {
+  align-items: center;
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: 14px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: auto 1fr auto;
+  padding: 12px;
+}
+
+.row .pos {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.row .score {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.meta {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.rule-grid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(86px, 1fr));
+}
+
+.rule {
+  background: var(--surface-muted);
+  border-radius: 12px;
+  display: flex;
+  font-family: var(--font-mono);
+  justify-content: space-between;
+  padding: 10px;
+}
+
+.form {
+  display: grid;
+  gap: 12px;
+  max-width: 420px;
+}
+
+.input {
+  background: var(--white);
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  min-height: 46px;
+  padding: 0 12px;
+  width: 100%;
+}
+
+.notice {
+  background: #fff4db;
+  border: 1px solid #f7d37c;
+  border-radius: 14px;
+  color: #6d4a00;
+  padding: 14px;
+}
+
+@media (min-width: 760px) {
+  .app-shell {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .bottom-nav {
+    border: 1px solid var(--border-light);
+    border-radius: 20px;
+    bottom: 18px;
+    left: 50%;
+    max-width: 520px;
+    right: auto;
+    transform: translateX(-50%);
+    width: calc(100% - 32px);
+  }
+}

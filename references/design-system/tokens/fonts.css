@@ -1,0 +1,5 @@
+/* Velozes webfonts — loaded from Google Fonts CDN.
+   Display: Barlow Condensed (sport, condensed headings)
+   Interface: Inter (highly legible UI text)
+   Numeric/timing: JetBrains Mono (tabular lap times, positions, points) */
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
