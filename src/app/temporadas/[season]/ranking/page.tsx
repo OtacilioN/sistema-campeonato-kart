@@ -62,7 +62,6 @@ export default async function RankingSeasonPage({ params, searchParams }: Rankin
           displayedRows.map(({ entry, pilot, points, rank }) => (
             <a className="ranking-row" href={`/pilotos/${pilot.pilotSlug}`} key={pilot.pilotId}>
               <span className={`rank-pos ${rank <= 3 ? `top-${rank}` : ""}`}>{rank}</span>
-              <span className="vz-avatar"><VzIcon name="user" size={20} /></span>
               <span className="ranking-driver">
                 <span><strong>{pilot.pilotName}</strong><em>{pilot.uf ?? "UF não informada"}</em></span>
                 <span className="ranking-months">

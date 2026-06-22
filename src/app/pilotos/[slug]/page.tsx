@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { uploadLapToLapAction } from "@/app/actions";
 import { AutoFileUploadForm } from "@/components/AutoFileUploadForm";
 import { LapCharts } from "@/components/LapCharts";
-import { Avatar, DateBlock, VzCard, VzIcon } from "@/components/VelozesUI";
+import { DateBlock, VzCard, VzIcon } from "@/components/VelozesUI";
 import { batteryPathSlug, ordinal, resultStatusLabel } from "@/lib/domain/labels";
 import { getPilotProfile, getPublicRanking } from "@/lib/data/public";
 
@@ -29,6 +29,48 @@ function dateParts(value: Date | null | undefined) {
   };
 }
 
+function PilotEvolutionChart({
+  entries,
+}: {
+  entries: { batteryNumber: number; finalPoints: number; discarded: boolean }[];
+}) {
+  const data = [...entries].sort((a, b) => a.batteryNumber - b.batteryNumber);
+  if (!data.length) {
+    return <p className="muted">Sem resultados confirmados para montar a evolução.</p>;
+  }
+
+  const width = 380;
+  const height = 180;
+  const paddingX = 34;
+  const paddingY = 26;
+  const maxPoints = Math.max(1, ...data.map((entry) => entry.finalPoints));
+  const step = data.length > 1 ? (width - paddingX * 2) / (data.length - 1) : 0;
+  const points = data.map((entry, index) => {
+    const x = data.length > 1 ? paddingX + index * step : width / 2;
+    const y = height - paddingY - (entry.finalPoints / maxPoints) * (height - paddingY * 2);
+    return { ...entry, x, y };
+  });
+  const path = points.map((point, index) => `${index === 0 ? "M" : "L"}${point.x.toFixed(1)} ${point.y.toFixed(1)}`).join(" ");
+
+  return (
+    <svg aria-label="Pontos por bateria" className="evolution-chart" role="img" viewBox={`0 0 ${width} ${height}`}>
+      {[0.25, 0.5, 0.75].map((ratio) => {
+        const y = paddingY + (height - paddingY * 2) * ratio;
+        return <line key={ratio} x1={paddingX} x2={width - paddingX} y1={y} y2={y} stroke="#E2E2E6" strokeDasharray="3 4" />;
+      })}
+      <path d={path} fill="none" stroke="#E10600" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.6" />
+      {points.map((point) => (
+        <g key={point.batteryNumber}>
+          <circle cx={point.x} cy={point.y} fill={point.discarded ? "#f7f7f8" : "#fff"} r="4" stroke="#E10600" strokeWidth="2" />
+          <text fill="#7a7a85" fontSize="10" textAnchor="middle" x={point.x} y={height - 6}>
+            B{point.batteryNumber}
+          </text>
+        </g>
+      ))}
+    </svg>
+  );
+}
+
 export default async function PilotPage({ params }: PilotPageProps) {
   const { slug } = await params;
   const [pilot, rankingData] = await Promise.all([getPilotProfile(slug), getPublicRanking()]);
@@ -42,7 +84,6 @@ export default async function PilotPage({ params }: PilotPageProps) {
     <div className="vz-page tight profile-page">
       <VzCard>
         <div className="profile-identity">
-          <Avatar size={64} />
           <div>
             <h1>{pilot.displayName || pilot.fullName}</h1>
             <span className="rank-badge">
@@ -82,18 +123,9 @@ export default async function PilotPage({ params }: PilotPageProps) {
       <VzCard>
         <div className="card-title-row">
           <h2>Evolução no campeonato</h2>
-          <span className="small-filter">Posição no ranking <VzIcon name="chevron-down" size={14} /></span>
+          <span className="small-filter">Pontos por bateria</span>
         </div>
-        <svg className="evolution-chart" viewBox="0 0 380 180">
-          <line x1="34" y1="25" x2="368" y2="25" stroke="#E2E2E6" strokeDasharray="3 4" />
-          <line x1="34" y1="75" x2="368" y2="75" stroke="#E2E2E6" strokeDasharray="3 4" />
-          <line x1="34" y1="125" x2="368" y2="125" stroke="#E2E2E6" strokeDasharray="3 4" />
-          <path d="M34 125 L104 96 L174 110 L244 70 L314 52 L368 40" fill="none" stroke="#E10600" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.6" />
-          {[34, 104, 174, 244, 314, 368].map((x, index) => (
-            <circle cx={x} cy={[125, 96, 110, 70, 52, 40][index]} fill="#fff" key={x} r="3.4" stroke="#E10600" strokeWidth="2" />
-          ))}
-        </svg>
-        <div style={{ color: "var(--text-muted)", fontSize: 11, textAlign: "center" }}>Etapas</div>
+        <PilotEvolutionChart entries={rankingRow?.entries ?? []} />
       </VzCard>
 
       <VzCard>

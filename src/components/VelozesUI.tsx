@@ -4,7 +4,6 @@ import {
   Calendar,
   CalendarClock,
   Check,
-  ChevronDown,
   ChevronRight,
   CircleCheck,
   Clock,
@@ -33,7 +32,6 @@ const icons: Record<string, LucideIcon> = {
   calendar: Calendar,
   "calendar-clock": CalendarClock,
   check: Check,
-  "chevron-down": ChevronDown,
   "chevron-right": ChevronRight,
   "circle-check": CircleCheck,
   clock: Clock,
@@ -163,14 +161,6 @@ export function SectionHead({
   );
 }
 
-export function Avatar({ size = 38 }: { size?: number }) {
-  return (
-    <span className="vz-avatar" style={{ width: size, height: size }}>
-      <VzIcon name="user" size={Math.round(size * 0.5)} />
-    </span>
-  );
-}
-
 export function RankRow({
   rank,
   name,
@@ -178,20 +168,17 @@ export function RankRow({
   points,
   href,
   podium = false,
-  showAvatar = true,
 }: {
   rank: number;
-  name: string;
+  name: React.ReactNode;
   meta?: React.ReactNode;
   points: number;
   href?: string;
   podium?: boolean;
-  showAvatar?: boolean;
 }) {
   const content = (
     <>
       <span className={`rank-pos ${podium && rank <= 3 ? `top-${rank}` : ""}`}>{rank}</span>
-      {showAvatar ? <Avatar /> : null}
       <span className="rank-driver">
         <strong>{name}</strong>
         {meta ? <small>{meta}</small> : null}

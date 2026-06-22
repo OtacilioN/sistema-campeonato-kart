@@ -40,7 +40,6 @@ export default async function RankingPage({ searchParams }: RankingPageProps) {
     <div className="vz-page tight ranking-page">
       <SectionHead
         icon="trophy"
-        right={<VzIcon name="chevron-down" size={18} />}
         sub="Acompanhe o desempenho dos pilotos na temporada."
         title={season?.name ?? "Temporada ativa"}
       />
@@ -65,7 +64,6 @@ export default async function RankingPage({ searchParams }: RankingPageProps) {
           displayedRows.map(({ entry, pilot, points, rank }, index) => (
             <a className="ranking-row" href={`/pilotos/${pilot.pilotSlug}`} key={pilot.pilotId}>
               <span className={`rank-pos ${rank <= 3 ? `top-${rank}` : ""}`}>{rank}</span>
-              <span className="vz-avatar"><VzIcon name="user" size={20} /></span>
               <span className="ranking-driver">
                 <span>
                   <strong>{pilot.pilotName}</strong>
@@ -96,7 +94,6 @@ export default async function RankingPage({ searchParams }: RankingPageProps) {
         <div style={{ alignItems: "center", display: "flex", gap: 10 }}>
           <VzIcon name="info" size={22} />
           <h2 style={{ flex: 1, fontSize: 20, textTransform: "none" }}>Como funciona a pontuação</h2>
-          <VzIcon name="chevron-down" size={20} />
         </div>
         <div style={{ color: "var(--text-secondary)", fontSize: 13, margin: "14px 0 12px" }}>
           A pontuação é definida com base na sua posição em cada corrida.

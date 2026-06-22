@@ -6,6 +6,12 @@ import { getActiveSeason } from "@/lib/data/public";
 
 export const dynamic = "force-dynamic";
 
+type CalendarioPageProps = {
+  searchParams?: Promise<{
+    periodo?: string;
+  }>;
+};
+
 function dateParts(value: Date | null | undefined) {
   if (!value) return { day: "--", mon: "SEM", dow: "DATA" };
   const day = new Intl.DateTimeFormat("pt-BR", { day: "2-digit" }).format(value);
@@ -14,29 +20,32 @@ function dateParts(value: Date | null | undefined) {
   return { day, mon, dow };
 }
 
-export default async function CalendarioPage() {
+export default async function CalendarioPage({ searchParams }: CalendarioPageProps) {
+  const query = await searchParams;
   const season = await getActiveSeason();
   const batteries = season?.batteries ?? [];
   const upcoming = batteries.filter((battery) => battery.status !== "CONFIRMED" && battery.status !== "CANCELED");
   const confirmed = batteries.filter((battery) => battery.status === "CONFIRMED");
   const nextId = upcoming[0]?.id ?? batteries.find((battery) => battery.status !== "CANCELED")?.id;
+  const selectedPeriod = query?.periodo === "anteriores" ? "anteriores" : "proximos";
+  const visibleBatteries = selectedPeriod === "anteriores" ? confirmed : upcoming;
 
   return (
     <div className="vz-page tight calendar-page">
       <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
-        <VzChip active>Próximos</VzChip>
-        <VzChip>Anteriores</VzChip>
+        <VzChip active={selectedPeriod === "proximos"} href="/calendario">Próximos</VzChip>
+        <VzChip active={selectedPeriod === "anteriores"} href="/calendario?periodo=anteriores">Anteriores</VzChip>
       </div>
 
       <SectionHead
         icon="calendar"
         sub="Acompanhe os principais eventos e planeje sua temporada."
-        title={confirmed.length ? "Eventos da temporada" : "Próximos eventos"}
+        title={selectedPeriod === "anteriores" ? "Eventos anteriores" : "Próximos eventos"}
       />
 
-      {batteries.length ? (
+      {visibleBatteries.length ? (
         <div className="calendar-list">
-          {batteries.map((battery) => {
+          {visibleBatteries.map((battery) => {
             const date = dateParts(battery.scheduledAt);
             const href = `/temporadas/${season?.slug}/baterias/${batteryPathSlug(battery.number)}`;
 
@@ -60,11 +69,6 @@ export default async function CalendarioPage() {
                         <VzIcon name="clock" size={15} /> {battery.monthLabel ?? formatDateTime(battery.scheduledAt)} · {batteryStatusLabel(battery.status)}
                       </div>
                     </div>
-                    <div className="track-thumb">
-                      <svg height="48" viewBox="0 0 110 110" width="48">
-                        <path d="M20 68 C16 45 31 22 55 19 C82 15 97 36 89 58 C83 75 64 89 43 86 C30 84 22 78 20 68 Z" fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="4" />
-                      </svg>
-                    </div>
                   </div>
                 </VzCard>
               </Link>
@@ -73,20 +77,13 @@ export default async function CalendarioPage() {
         </div>
       ) : (
         <VzCard>
-          <SectionHead icon="calendar-clock" sub="Crie a temporada ativa e cadastre as baterias no admin para iniciar o calendário público." title="Nenhuma bateria cadastrada" />
+          <SectionHead
+            icon="calendar-clock"
+            sub={batteries.length ? "Use o outro filtro para ver os eventos disponíveis." : "Crie a temporada ativa e cadastre as baterias no admin para iniciar o calendário público."}
+            title={selectedPeriod === "anteriores" ? "Nenhum evento anterior" : "Nenhum próximo evento"}
+          />
         </VzCard>
       )}
-
-      <VzCard>
-        <div style={{ alignItems: "center", display: "flex", gap: 12 }}>
-          <span className="icon-tile muted"><VzIcon name="calendar-clock" /></span>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 15, fontWeight: 700 }}>Ver eventos anteriores</div>
-            <div style={{ color: "var(--text-muted)", fontSize: 13 }}>Consulte o calendário completo de eventos já realizados.</div>
-          </div>
-          <VzIcon name="chevron-right" />
-        </div>
-      </VzCard>
 
       <div style={{ alignItems: "center", color: "var(--text-muted)", display: "flex", fontSize: 12, gap: 6, justifyContent: "center" }}>
         <VzIcon name="info" size={14} /> Datas e locais sujeitos a alteração.

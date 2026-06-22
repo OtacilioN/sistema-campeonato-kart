@@ -11,7 +11,7 @@ import {
   importOfficialPdfAction,
 } from "@/app/actions";
 import { AutoFileUploadForm } from "@/components/AutoFileUploadForm";
-import { IconTile, SectionHead, VzBadge, VzButton, VzCard, VzIcon } from "@/components/VelozesUI";
+import { IconTile, SectionHead, VzBadge, VzButton, VzCard } from "@/components/VelozesUI";
 import { ADMIN_COOKIE, isAdminCookieValid } from "@/lib/admin-auth";
 import { batteryStatusLabel, reviewSourceLabel, reviewStatusLabel } from "@/lib/domain/labels";
 import { formatDateTime } from "@/lib/domain/time";
@@ -37,16 +37,15 @@ export default async function AdminPage() {
     });
 
     return (
-      <div className="vz-page tight admin-mock">
+      <div className="vz-page tight admin-page">
         <VzCard>
           <div className="admin-event-selector">
             <IconTile name="calendar" tone="dark" />
             <div>
-              <span>Selecione a temporada</span>
+              <span>Temporada ativa</span>
               <strong>{seasons.find((season) => season.active)?.name ?? "Nenhuma temporada ativa"}</strong>
               <small>Resultados públicos usam apenas baterias confirmadas.</small>
             </div>
-            <VzIcon name="chevron-down" />
           </div>
         </VzCard>
 
@@ -169,7 +168,7 @@ export default async function AdminPage() {
 
   if (!configured) {
     return (
-      <div className="vz-page tight admin-mock">
+      <div className="vz-page tight admin-page">
         <VzCard>
           <SectionHead icon="lock" sub="Defina ADMIN_PASSWORD no ambiente local ou na Vercel para habilitar o acesso administrativo." title="Admin bloqueado" />
           <div className="notice">Não existe senha padrão de desenvolvimento.</div>
@@ -204,7 +203,7 @@ export default async function AdminPage() {
   }
 
   return (
-    <div className="vz-page tight admin-mock">
+    <div className="vz-page tight admin-page">
       <VzCard>
         <SectionHead icon="lock" sub="Use a senha configurada em ADMIN_PASSWORD. O acesso inicial usa senha única, sem conta de administrador." title="Entrar" />
       </VzCard>

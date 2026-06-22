@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { LapCharts } from "@/components/LapCharts";
-import { Avatar, CheckeredFlag, VzCard, VzIcon } from "@/components/VelozesUI";
+import { CheckeredFlag, VzCard, VzIcon } from "@/components/VelozesUI";
 import { batteryStatusLabel, ordinal, resultStatusLabel } from "@/lib/domain/labels";
 import { formatDateTime } from "@/lib/domain/time";
 import { getBatteryDetail } from "@/lib/data/public";
@@ -22,15 +22,15 @@ export default async function BatteryPage({ params }: BatteryPageProps) {
 
   return (
     <div className="vz-page tight battery-page">
-      <button className="race-switcher" type="button">
+      <Link className="race-switcher" href="/calendario">
         <CheckeredFlag />
-        <span>Trocar de corrida</span>
-        <VzIcon name="chevron-down" />
-      </button>
+        <span>Ver calendário</span>
+        <VzIcon name="chevron-right" />
+      </Link>
 
       <VzCard>
         <div className="race-summary">
-          <Avatar size={48} />
+          <CheckeredFlag size={32} />
           <div>
             <h1>{battery.label}</h1>
             <span>
@@ -75,8 +75,7 @@ export default async function BatteryPage({ params }: BatteryPageProps) {
           {battery.results.map((result) => (
             <VzCard key={result.id}>
               <div className="race-driver-strip">
-                <Avatar size={48} />
-                <div>
+                <div className="race-driver-main">
                   <Link href={`/pilotos/${result.pilot.slug}`}>
                     <h2>{result.pilot.displayName || result.pilot.fullName}</h2>
                   </Link>
@@ -85,7 +84,7 @@ export default async function BatteryPage({ params }: BatteryPageProps) {
                     <span>{ordinal(result.position)}</span>
                   </p>
                 </div>
-                <div>
+                <div className="race-driver-score">
                   <small>Pontos</small>
                   <strong>{result.finalPoints}</strong>
                 </div>
