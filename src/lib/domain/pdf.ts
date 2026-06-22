@@ -107,9 +107,6 @@ export async function parseOfficialReport(input: Buffer | Uint8Array | File): Pr
       row.bestLapBonus = 1;
       row.finalPoints = calculateFinalPoints(row);
     }
-    if (row.needsNameReview) {
-      messages.push(`Nome truncado detectado: ${row.fullName}`);
-    }
   }
 
   if (!rows.length) {

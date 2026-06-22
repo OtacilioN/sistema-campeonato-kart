@@ -63,9 +63,10 @@ export function parseManualReviewRows(input: string): ReviewRow[] {
 
 export function parseReviewRowsFromForm(formData: FormData): ReviewRow[] {
   const count = Number(formData.get("rowCount") ?? 0);
-  const poleIndex = Number(formData.get("poleIndex") ?? -1);
+  const rawPoleIndex = String(formData.get("poleIndex") ?? "").trim();
+  const poleIndex = /^\d+$/.test(rawPoleIndex) ? Number(rawPoleIndex) : null;
 
-  return Array.from({ length: count }, (_, index) => {
+  const rows = Array.from({ length: count }, (_, index) => {
     const status = String(formData.get(`rows.${index}.status`) ?? "CLASSIFIED") as "CLASSIFIED" | "NC";
     const position = status === "NC" ? null : numberOrNull(formData.get(`rows.${index}.position`));
     const positionPoints = pointsForPosition(position, status);
@@ -99,6 +100,12 @@ export function parseReviewRowsFromForm(formData: FormData): ReviewRow[] {
     row.finalPoints = calculateFinalPoints(row);
     return row;
   });
+
+  if (count > 0 && rows.filter((row) => row.poleBonus === 1).length !== 1) {
+    throw new Error("Selecione exatamente um piloto classificado como pole position.");
+  }
+
+  return rows;
 }
 
 function numberOrNull(value: FormDataEntryValue | null) {

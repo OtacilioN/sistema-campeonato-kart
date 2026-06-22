@@ -28,6 +28,7 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
   const payload = review.reviewPayload as unknown as ReviewPayload;
   const rows = payload.rows ?? [];
   const currentPole = rows.findIndex((row) => row.poleBonus > 0);
+  const visibleMessages = review.messages.filter((message) => !message.startsWith("Nome truncado detectado:"));
 
   return (
     <div className="grid wide">
@@ -37,9 +38,9 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
         description="Revise todos os campos, marque a pole position e confirme somente quando o resultado estiver pronto para o ranking público."
       />
 
-      {review.messages.length ? (
+      {visibleMessages.length ? (
         <section className="notice">
-          {review.messages.map((message) => (
+          {visibleMessages.map((message) => (
             <p key={message}>{message}</p>
           ))}
         </section>
@@ -59,6 +60,10 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
         <form action={confirmReviewAction} className="review-form">
           <input type="hidden" name="reviewId" value={review.id} />
           <input type="hidden" name="rowCount" value={rows.length} />
+
+          <section className="notice neutral">
+            <p>Selecione obrigatoriamente o piloto que fez a pole position antes de confirmar o resultado.</p>
+          </section>
 
           <div className="review-grid header">
             <span>Pole</span>
@@ -82,7 +87,15 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
 
           {rows.map((row, index) => (
             <div className="review-grid" key={`${row.fullName}-${index}`}>
-              <input type="radio" name="poleIndex" value={index} defaultChecked={currentPole === index} aria-label={`Pole ${row.fullName}`} />
+              <input
+                type="radio"
+                name="poleIndex"
+                value={index}
+                defaultChecked={currentPole === index}
+                required
+                disabled={row.status === "NC" || review.status === "CONFIRMED"}
+                aria-label={`Pole ${row.fullName}`}
+              />
               <input name={`rows.${index}.position`} defaultValue={row.position ?? ""} />
               <input name={`rows.${index}.pilotNumber`} defaultValue={row.pilotNumber ?? ""} />
               <input name={`rows.${index}.fullName`} defaultValue={row.fullName} required />
