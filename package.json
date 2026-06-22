@@ -4,10 +4,16 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "dev": "next dev",
+    "dev": "node scripts/dev-local.mjs",
+    "dev:next": "next dev",
+    "dev:db": "docker compose up -d postgres",
+    "dev:db:down": "docker compose down",
+    "db:push:local": "DATABASE_URL=\"postgresql://velocidade:velocidade@localhost:54329/velocidade_dev?schema=public\" prisma db push",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "prisma:generate": "prisma generate",
     "prisma:validate": "DATABASE_URL=\"${DATABASE_URL:-postgresql://USER:PASSWORD@HOST/DATABASE?sslmode=require}\" prisma validate"
   },
@@ -15,8 +21,10 @@
     "@prisma/client": "6.19.3",
     "lucide-react": "latest",
     "next": "latest",
+    "pdf-parse": "^2.4.5",
     "react": "latest",
-    "react-dom": "latest"
+    "react-dom": "latest",
+    "recharts": "^3.8.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "latest",
@@ -28,6 +36,7 @@
     "postcss": "latest",
     "prisma": "6.19.3",
     "tailwindcss": "latest",
-    "typescript": "latest"
+    "typescript": "latest",
+    "vitest": "^4.1.9"
   }
 }

@@ -1,26 +1,39 @@
+import Link from "next/link";
 import { PageHeader } from "@/components/PageHeader";
-import { demoRanking } from "@/lib/demo-data";
+import { getPublicRanking } from "@/lib/data/public";
 
-export default function PilotosPage() {
+export const dynamic = "force-dynamic";
+
+export default async function PilotosPage() {
+  const { season, ranking } = await getPublicRanking();
+
   return (
     <div className="grid">
       <PageHeader
-        eyebrow="Temporada ativa"
+        eyebrow={season?.name ?? "Temporada ativa"}
         title="Pilotos"
-        description="Lista pública de pilotos da temporada ativa. Pilotos históricos ficarão preservados para busca futura."
+        description="Lista pública de pilotos que já participaram de resultado confirmado na temporada ativa."
       />
-      <section className="table">
-        {demoRanking.map((pilot) => (
-          <article className="row" key={pilot.pilot}>
-            <span className="pos">{pilot.uf}</span>
-            <div>
-              <strong>{pilot.pilot}</strong>
-              <p className="meta">Slug público será derivado de nome + UF.</p>
-            </div>
-            <span className="score">{pilot.final}</span>
-          </article>
-        ))}
-      </section>
+
+      {ranking.length ? (
+        <section className="table">
+          {ranking.map((pilot) => (
+            <Link className="row" href={`/pilotos/${pilot.pilotSlug}`} key={pilot.pilotId}>
+              <span className="pos">{pilot.uf}</span>
+              <div>
+                <strong>{pilot.pilotName}</strong>
+                <p className="meta">{pilot.entries.length} baterias · {pilot.grossPoints} pts brutos · {pilot.discardedPoints} descarte</p>
+              </div>
+              <span className="score">{pilot.finalPoints}</span>
+            </Link>
+          ))}
+        </section>
+      ) : (
+        <section className="card">
+          <h2>Nenhum piloto cadastrado</h2>
+          <p className="muted">Os pilotos aparecem aqui depois da primeira bateria confirmada por PDF oficial ou inserção manual.</p>
+        </section>
+      )}
     </div>
   );
 }

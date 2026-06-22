@@ -1,5 +1,9 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/PageHeader";
-import { demoRanking } from "@/lib/demo-data";
+import { getPublicRanking } from "@/lib/data/public";
+
+export const dynamic = "force-dynamic";
 
 type RankingSeasonPageProps = {
   params: Promise<{
@@ -8,27 +12,37 @@ type RankingSeasonPageProps = {
 };
 
 export default async function RankingSeasonPage({ params }: RankingSeasonPageProps) {
-  const { season } = await params;
+  const { season: seasonSlug } = await params;
+  const { season, ranking } = await getPublicRanking(seasonSlug);
+  if (!season) notFound();
 
   return (
     <div className="grid">
       <PageHeader
-        eyebrow={`Temporada ${season}`}
+        eyebrow={season.name}
         title="Ranking da temporada"
         description="URL estável para compartilhamento do ranking de uma temporada específica."
       />
-      <section className="table">
-        {demoRanking.map((pilot) => (
-          <div className="row" key={pilot.pilot}>
-            <span className="pos">{pilot.position}</span>
-            <div>
-              <strong>{pilot.pilot}</strong>
-              <p className="meta">Bruto {pilot.gross} · descarte {pilot.discard}</p>
-            </div>
-            <span className="score">{pilot.final}</span>
-          </div>
-        ))}
-      </section>
+
+      {ranking.length ? (
+        <section className="table">
+          {ranking.map((pilot) => (
+            <Link className="row" href={`/pilotos/${pilot.pilotSlug}`} key={pilot.pilotId}>
+              <span className="pos">{pilot.rank}º</span>
+              <div>
+                <strong>{pilot.pilotName}</strong>
+                <p className="meta">Bruto {pilot.grossPoints} · descarte {pilot.discardedPoints} · vitórias {pilot.wins}</p>
+              </div>
+              <span className="score">{pilot.finalPoints}</span>
+            </Link>
+          ))}
+        </section>
+      ) : (
+        <section className="card">
+          <h2>Ranking ainda não iniciado</h2>
+          <p className="muted">Nenhuma bateria confirmada nesta temporada.</p>
+        </section>
+      )}
     </div>
   );
 }

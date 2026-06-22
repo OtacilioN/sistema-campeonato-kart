@@ -47,11 +47,14 @@ model Battery {
   locationName  String          @default("Circuito Internacional Paladino")
   city          String          @default("Conde")
   uf            String          @default("PB")
+  category      String?
+  type          String?
   parsedPayload Json?
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   season        Season          @relation(fields: [seasonId], references: [id], onDelete: Cascade)
   results       BatteryResult[]
+  reviews       ResultReview[]
 
   @@unique([seasonId, number])
 }
@@ -75,6 +78,7 @@ model BatteryResult {
   poleBonus        Int           @default(0)
   bestLapBonus     Int           @default(0)
   penaltyPoints    Int           @default(0)
+  penaltyReason    String?
   finalPoints      Int           @default(0)
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
@@ -83,6 +87,21 @@ model BatteryResult {
   lapToLap         LapToLap?
 
   @@unique([batteryId, pilotId])
+}
+
+model ResultReview {
+  id            String       @id @default(cuid())
+  batteryId     String
+  source        ReviewSource
+  status        ReviewStatus @default(PENDING)
+  fileName      String?
+  parsedPayload Json?
+  reviewPayload Json
+  messages      String[]     @default([])
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  confirmedAt   DateTime?
+  battery       Battery      @relation(fields: [batteryId], references: [id], onDelete: Cascade)
 }
 
 model LapToLap {
@@ -133,5 +152,16 @@ enum ResultStatus {
 
 enum LapValidation {
   VALIDATED
+  REJECTED
+}
+
+enum ReviewSource {
+  OFFICIAL_PDF
+  MANUAL
+}
+
+enum ReviewStatus {
+  PENDING
+  CONFIRMED
   REJECTED
 }

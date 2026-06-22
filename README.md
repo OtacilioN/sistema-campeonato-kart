@@ -33,14 +33,24 @@ Resultados, rankings e dados estruturados de lap-to-lap validado são conteúdo 
 
 ```bash
 npm install
-cp .env.example .env.local
 npm run dev
 ```
 
-Configure `.env.local` com valores reais apenas no ambiente local:
+`npm run dev` sobe automaticamente um PostgreSQL local em Docker e inicia o Next.js apontando para:
 
 ```bash
-DATABASE_URL="postgresql://USER:PASSWORD@HOST/DATABASE?sslmode=require"
+postgresql://velocidade:velocidade@localhost:54329/velocidade_dev?schema=public
+```
+
+Para criar/atualizar as tabelas no banco local a partir do schema Prisma:
+
+```bash
+npm run db:push:local
+```
+
+Use `.env.local` apenas para variáveis locais que não devem ir para git, como a senha do admin:
+
+```bash
 ADMIN_PASSWORD="uma-senha-segura"
 ```
 
@@ -50,6 +60,9 @@ Sem `ADMIN_PASSWORD`, a rota `/admin` permanece bloqueada e não existe senha pa
 
 ```bash
 npm run dev
+npm run dev:db
+npm run dev:db:down
+npm run db:push:local
 npm run lint
 npm run build
 npm run prisma:generate
@@ -76,7 +89,9 @@ Service worker ficou propositalmente pendente. Antes de adicioná-lo, definir:
 
 ## Banco de dados
 
-O projeto usa Prisma com PostgreSQL via Neon. A variável esperada é `DATABASE_URL`.
+O desenvolvimento local usa PostgreSQL em Docker. Produção usa PostgreSQL no Neon. A variável esperada pela aplicação é `DATABASE_URL`.
+
+O `npm run dev` injeta automaticamente a `DATABASE_URL` local do Docker no processo do Next.js. Para comandos Prisma locais que acessam o banco, use os scripts locais, como `npm run db:push:local`.
 
 Não execute migrations destrutivas sem revisão. Após alterar `prisma/schema.prisma`, rode:
 

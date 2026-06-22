@@ -35,6 +35,7 @@ Avoid reintroducing `Competitor`, `Race` or `RaceResult` as primary domain names
 - Lap-to-lap is public, complementary and does not affect ranking.
 - Raw PDFs are not stored; persist only structured extracted data.
 - Admin access uses `ADMIN_PASSWORD`; never add a default password.
+- `npm run dev` must use the local Docker PostgreSQL database, not Neon.
 - Preserve `docs/documentacao-processo.md` as historical process documentation.
 - Prefer ADRs only for hard-to-reverse, surprising trade-off decisions.
 
