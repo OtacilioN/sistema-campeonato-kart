@@ -39,7 +39,7 @@ export function calculateFinalPoints(input: {
 
   return Math.max(
     0,
-    input.positionPoints + input.poleBonus + input.bestLapBonus + input.penaltyPoints,
+    input.positionPoints + input.poleBonus + input.bestLapBonus - Math.max(0, input.penaltyPoints),
   );
 }
 

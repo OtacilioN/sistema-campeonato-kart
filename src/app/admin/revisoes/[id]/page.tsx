@@ -112,7 +112,7 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
               <input name={`rows.${index}.lastLapTime`} defaultValue={row.lastLapTime ?? ""} />
               <input name={`rows.${index}.totalLaps`} defaultValue={row.totalLaps ?? ""} />
               <input name={`rows.${index}.averageSpeed`} defaultValue={row.averageSpeed ?? ""} />
-              <input name={`rows.${index}.penaltyPoints`} defaultValue={row.penaltyPoints} />
+              <input name={`rows.${index}.penaltyPoints`} defaultValue={row.penaltyPoints} min="0" step="1" type="number" />
               <input name={`rows.${index}.penaltyReason`} defaultValue={row.penaltyReason ?? ""} />
               <input name={`rows.${index}.finalPoints`} value={row.finalPoints} readOnly />
               <input type="hidden" name={`rows.${index}.bestLapBonus`} value={row.bestLapBonus} />

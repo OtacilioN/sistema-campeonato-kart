@@ -72,7 +72,7 @@ export function parseReviewRowsFromForm(formData: FormData): ReviewRow[] {
     const position = status === "NC" ? null : numberOrNull(formData.get(`rows.${index}.position`));
     const positionPoints = pointsForPosition(position, status);
     const bestLapBonus = Number(formData.get(`rows.${index}.bestLapBonus`) ?? 0);
-    const penaltyPoints = Number(formData.get(`rows.${index}.penaltyPoints`) ?? 0);
+    const penaltyPoints = nonNegativeNumberOrZero(formData.get(`rows.${index}.penaltyPoints`));
     const poleBonus = index === poleIndex && status !== "NC" ? 1 : 0;
 
     const row: ReviewRow = {
@@ -139,6 +139,15 @@ function numberOrNull(value: FormDataEntryValue | null) {
   if (!stringValue) return null;
   const number = Number(stringValue);
   return Number.isFinite(number) ? number : null;
+}
+
+function nonNegativeNumberOrZero(value: FormDataEntryValue | null) {
+  const stringValue = String(value ?? "").trim();
+  if (!stringValue) return 0;
+  const number = Number(stringValue);
+  if (!Number.isFinite(number)) return 0;
+  if (number < 0) throw new Error("Penalização não pode ser negativa.");
+  return number;
 }
 
 function stringOrNull(value: FormDataEntryValue | null) {

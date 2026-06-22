@@ -25,8 +25,12 @@ describe("scoring", () => {
     expect(pointsForPosition(1, "NC")).toBe(0);
   });
 
+  it("subtracts positive penalty points", () => {
+    expect(calculateFinalPoints({ status: "CLASSIFIED", positionPoints: 22, poleBonus: 0, bestLapBonus: 0, penaltyPoints: 5 })).toBe(17);
+  });
+
   it("does not allow negative final points", () => {
-    expect(calculateFinalPoints({ status: "CLASSIFIED", positionPoints: 2, poleBonus: 0, bestLapBonus: 0, penaltyPoints: -5 })).toBe(0);
+    expect(calculateFinalPoints({ status: "CLASSIFIED", positionPoints: 2, poleBonus: 0, bestLapBonus: 0, penaltyPoints: 5 })).toBe(0);
   });
 
   it("forces NC to zero without bonuses", () => {

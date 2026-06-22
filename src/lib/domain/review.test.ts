@@ -57,6 +57,23 @@ describe("review form parsing", () => {
     expect(rows[1].finalPoints).toBe(rows[1].positionPoints + 1);
   });
 
+  it("subtracts positive penalty values from final points", () => {
+    const formData = reviewForm({ poleIndex: "1" });
+    formData.set("rows.1.penaltyPoints", "5");
+
+    const rows = parseReviewRowsFromForm(formData);
+
+    expect(rows[1].penaltyPoints).toBe(5);
+    expect(rows[1].finalPoints).toBe(rows[1].positionPoints + 1 - 5);
+  });
+
+  it("rejects negative penalty values", () => {
+    const formData = reviewForm({ poleIndex: "1" });
+    formData.set("rows.1.penaltyPoints", "-5");
+
+    expect(() => parseReviewRowsFromForm(formData)).toThrow("Penalização não pode ser negativa.");
+  });
+
   it("accepts missing UF as optional metadata", () => {
     const rows = parseReviewRowsFromForm(reviewForm({ poleIndex: "1", ufs: [null, "PB"] }));
 
