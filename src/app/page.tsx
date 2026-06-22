@@ -1,4 +1,5 @@
 import { IconTile, RankRow, VzButton, VzCard, VzIcon } from "@/components/VelozesUI";
+import { PwaInstallButton } from "@/components/PwaInstallButton";
 import { getActiveSeason, getPublicRanking } from "@/lib/data/public";
 
 export const dynamic = "force-dynamic";
@@ -118,7 +119,10 @@ export default async function Home() {
           <p className="muted" style={{ marginBottom: 16 }}>Nenhum próximo evento com data futura cadastrada.</p>
         )}
 
-        <VzButton href="/calendario">Ver calendário</VzButton>
+        <div className="home-actions">
+          <VzButton href="/calendario">Ver calendário</VzButton>
+          <PwaInstallButton />
+        </div>
       </VzCard>
 
       <VzCard>

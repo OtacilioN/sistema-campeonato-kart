@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { PwaRuntime } from "@/components/PwaRuntime";
 import { BottomNav, TopBar } from "@/components/PublicNav";
 import { appInfo } from "@/lib/demo-data";
 
@@ -16,7 +17,7 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: "/icon.svg",
-    apple: "/icon.svg",
+    apple: "/pwa/icon-192.png",
   },
 };
 
@@ -34,6 +35,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body>
+        <PwaRuntime />
         <TopBar />
         <main className="app-shell">{children}</main>
         <BottomNav />

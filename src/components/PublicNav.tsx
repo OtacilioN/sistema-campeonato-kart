@@ -11,6 +11,8 @@ const navItems = [
   { href: "/pilotos", id: "drivers", label: "Pilotos", icon: User },
 ];
 
+const homeTitle = "Velocidade quase máxima";
+
 function titleForPath(pathname: string) {
   if (pathname.startsWith("/admin")) return "Admin";
   if (pathname.startsWith("/calendario")) return "Calendário";
@@ -18,7 +20,7 @@ function titleForPath(pathname: string) {
   if (pathname.startsWith("/pilotos/")) return "Perfil do Piloto";
   if (pathname.startsWith("/pilotos")) return "Pilotos";
   if (pathname.includes("/baterias/")) return "Corrida";
-  return "Velozes";
+  return homeTitle;
 }
 
 function activeForPath(pathname: string) {
@@ -36,7 +38,7 @@ export function TopBar() {
   return (
     <header className={`topbar ${isAdmin ? "dark" : ""}`}>
       <div className="topbar-side" />
-      <Link className={`chrome-title ${title === "Velozes" ? "brand" : ""}`} href="/">
+      <Link className={`chrome-title ${title === homeTitle ? "brand" : ""}`} href="/">
         {title}
       </Link>
       <Link className="admin-lock" href="/admin" aria-label="Acesso administrativo">

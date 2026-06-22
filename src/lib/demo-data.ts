@@ -1,7 +1,6 @@
 export const appInfo = {
   publicName: "Velocidade Quase Máxima",
   shortName: "Velocidade",
-  codename: "Velozes",
   description: "Sistema web para campeonato amador de kart",
   productionUrl: "https://velocidadequasemaxima.com.br",
 };
