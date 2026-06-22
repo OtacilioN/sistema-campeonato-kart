@@ -5,6 +5,7 @@ import {
   activateSeasonAction,
   cancelBatteryAction,
   createBatteryAction,
+  createConfirmedResultReviewAction,
   createManualReviewAction,
   createSeasonAction,
   importOfficialPdfAction,
@@ -133,6 +134,12 @@ export default async function AdminPage() {
                         <VzButton type="submit">Criar revisão manual</VzButton>
                       </form>
                     </details>
+                    {battery.status === "CONFIRMED" && battery.results.length > 0 ? (
+                      <form action={createConfirmedResultReviewAction}>
+                        <input type="hidden" name="batteryId" value={battery.id} />
+                        <VzButton type="submit" variant="secondary">Editar resultado</VzButton>
+                      </form>
+                    ) : null}
                     {battery.status !== "CANCELED" ? (
                       <form action={cancelBatteryAction}>
                         <input type="hidden" name="batteryId" value={battery.id} />

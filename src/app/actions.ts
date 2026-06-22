@@ -125,6 +125,70 @@ export async function createManualReviewAction(formData: FormData) {
   redirect(`/admin/revisoes/${review.id}`);
 }
 
+export async function createConfirmedResultReviewAction(formData: FormData) {
+  await requireAdmin();
+  const batteryId = required(formData.get("batteryId"), "bateria");
+  const battery = await prisma.battery.findUnique({
+    where: { id: batteryId },
+    include: {
+      results: {
+        orderBy: [{ position: "asc" }, { createdAt: "asc" }],
+        include: { pilot: true },
+      },
+    },
+  });
+
+  if (!battery) throw new Error("Bateria não encontrada.");
+  if (battery.status !== "CONFIRMED" || battery.results.length === 0) {
+    throw new Error("Só é possível editar uma bateria com resultado confirmado.");
+  }
+
+  const rows: ReviewRow[] = battery.results.map((result) => ({
+    fullName: result.pilot.fullName,
+    uf: result.pilot.uf,
+    pilotNumber: result.pilotNumber,
+    position: result.position,
+    status: result.status,
+    bestLapNumber: result.bestLapNumber,
+    bestLapTime: result.bestLapTime,
+    totalTime: result.totalTime,
+    gapToLeader: result.gapToLeader,
+    gapToPrevious: result.gapToPrevious,
+    lastLapTime: result.lastLapTime,
+    totalLaps: result.totalLaps,
+    averageSpeed: result.averageSpeed?.toString().replace(".", ",") ?? null,
+    positionPoints: result.positionPoints,
+    poleBonus: result.poleBonus,
+    bestLapBonus: result.bestLapBonus,
+    penaltyPoints: result.penaltyPoints,
+    penaltyReason: result.penaltyReason,
+    finalPoints: result.finalPoints,
+    needsNameReview: false,
+  }));
+
+  const payload: ReviewPayload = {
+    batteryLabel: battery.label,
+    batteryNumber: battery.number,
+    type: battery.type,
+    category: battery.category,
+    circuit: battery.locationName,
+    occurredAtText: null,
+    rows,
+  };
+
+  const review = await prisma.resultReview.create({
+    data: {
+      batteryId,
+      source: "MANUAL",
+      reviewPayload: payload as unknown as Prisma.InputJsonValue,
+      messages: ["Revisão criada a partir do resultado confirmado atual."],
+    },
+  });
+
+  revalidatePath("/admin");
+  redirect(`/admin/revisoes/${review.id}`);
+}
+
 export async function importOfficialPdfAction(formData: FormData) {
   await requireAdmin();
   const batteryId = required(formData.get("batteryId"), "bateria");
@@ -184,31 +248,34 @@ export async function confirmReviewAction(formData: FormData) {
 
   try {
     await prisma.$transaction(async (tx) => {
-      await tx.batteryResult.deleteMany({ where: { batteryId: review.batteryId } });
+      const resolvedRows: Array<{ row: ReviewRow; pilotId: string }> = [];
 
       for (const row of rows) {
         const pilot = await upsertPilot(tx, row.fullName, row.uf);
-        await tx.batteryResult.create({
-          data: {
+        resolvedRows.push({ row, pilotId: pilot.id });
+      }
+
+      await tx.batteryResult.deleteMany({
+        where: {
+          batteryId: review.batteryId,
+          pilotId: { notIn: resolvedRows.map(({ pilotId }) => pilotId) },
+        },
+      });
+
+      for (const { row, pilotId } of resolvedRows) {
+        const data = batteryResultData(row);
+        await tx.batteryResult.upsert({
+          where: {
+            batteryId_pilotId: {
+              batteryId: review.batteryId,
+              pilotId,
+            },
+          },
+          update: data,
+          create: {
             batteryId: review.batteryId,
-            pilotId: pilot.id,
-            pilotNumber: row.pilotNumber,
-            position: row.position,
-            status: row.status,
-            bestLapNumber: row.bestLapNumber,
-            bestLapTime: row.bestLapTime,
-            totalTime: row.totalTime,
-            gapToLeader: row.gapToLeader,
-            gapToPrevious: row.gapToPrevious,
-            lastLapTime: row.lastLapTime,
-            totalLaps: row.totalLaps,
-            averageSpeed: row.averageSpeed ? row.averageSpeed.replace(",", ".") : null,
-            positionPoints: row.positionPoints,
-            poleBonus: row.poleBonus,
-            bestLapBonus: row.bestLapBonus,
-            penaltyPoints: row.penaltyPoints,
-            penaltyReason: row.penaltyReason,
-            finalPoints: row.finalPoints,
+            pilotId,
+            ...data,
           },
         });
       }
@@ -266,6 +333,28 @@ async function rejectReviewConfirmation(reviewId: string, currentMessages: strin
 
 function readableErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : "Revise os dados antes de confirmar.";
+}
+
+function batteryResultData(row: ReviewRow) {
+  return {
+    pilotNumber: row.pilotNumber,
+    position: row.position,
+    status: row.status,
+    bestLapNumber: row.bestLapNumber,
+    bestLapTime: row.bestLapTime,
+    totalTime: row.totalTime,
+    gapToLeader: row.gapToLeader,
+    gapToPrevious: row.gapToPrevious,
+    lastLapTime: row.lastLapTime,
+    totalLaps: row.totalLaps,
+    averageSpeed: row.averageSpeed ? row.averageSpeed.replace(",", ".") : null,
+    positionPoints: row.positionPoints,
+    poleBonus: row.poleBonus,
+    bestLapBonus: row.bestLapBonus,
+    penaltyPoints: row.penaltyPoints,
+    penaltyReason: row.penaltyReason,
+    finalPoints: row.finalPoints,
+  };
 }
 
 export async function uploadLapToLapAction(formData: FormData) {
