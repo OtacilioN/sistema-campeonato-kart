@@ -27,11 +27,12 @@ export default async function BatteryPage({ params, searchParams }: BatteryPageP
   if (!battery) notFound();
 
   const batteryPath = `/temporadas/${seasonSlug}/baterias/${batterySlug}`;
+  const seasonCalendarPath = `/temporadas/${seasonSlug}/calendario?periodo=anteriores`;
   const canUploadVideo = Boolean(process.env.VIDEOMAKER_PASSWORD);
 
   return (
     <div className="vz-page tight battery-page">
-      <Link className="race-switcher" href="/calendario">
+      <Link className="race-switcher" href={seasonCalendarPath}>
         <CheckeredFlag />
         <span>Ver calendário</span>
         <VzIcon name="chevron-right" />
@@ -163,7 +164,7 @@ export default async function BatteryPage({ params, searchParams }: BatteryPageP
             <VzCard key={result.id}>
               <div className="race-driver-strip">
                 <div className="race-driver-main">
-                  <Link href={`/pilotos/${result.pilot.slug}`}>
+                  <Link href={`/temporadas/${seasonSlug}/pilotos/${result.pilot.slug}`}>
                     <h2>{result.pilot.displayName || result.pilot.fullName}</h2>
                   </Link>
                   <p>

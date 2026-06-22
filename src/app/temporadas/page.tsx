@@ -52,8 +52,8 @@ export default async function TemporadasPage() {
                   </div>
                 </div>
 
-                <VzButton href={season.active ? "/ranking" : `/temporadas/${season.slug}/ranking`}>
-                  Ver ranking
+                <VzButton href={season.active ? "/" : `/temporadas/${season.slug}`}>
+                  Ver temporada
                   <VzIcon name="chevron-right" size={16} />
                 </VzButton>
 

@@ -5,30 +5,44 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const navItems = [
-  { href: "/", id: "home", label: "Home", icon: Home },
-  { href: "/calendario", id: "calendar", label: "Calendário", icon: Calendar },
-  { href: "/ranking", id: "ranking", label: "Ranking", icon: BarChart3 },
-  { href: "/pilotos", id: "drivers", label: "Pilotos", icon: User },
+  { path: "/", id: "home", label: "Home", icon: Home },
+  { path: "/calendario", id: "calendar", label: "Calendário", icon: Calendar },
+  { path: "/ranking", id: "ranking", label: "Ranking", icon: BarChart3 },
+  { path: "/pilotos", id: "drivers", label: "Pilotos", icon: User },
 ];
 
 const homeTitle = "Velocidade quase máxima";
 
+function seasonContext(pathname: string) {
+  const match = pathname.match(/^\/temporadas\/([^/]+)(\/.*)?$/);
+  if (!match) return { basePath: "", path: pathname };
+  return {
+    basePath: `/temporadas/${match[1]}`,
+    path: match[2] || "/",
+  };
+}
+
 function titleForPath(pathname: string) {
+  if (pathname === "/temporadas") return "Temporadas";
+  const { path } = seasonContext(pathname);
+
   if (pathname.startsWith("/admin")) return "Admin";
-  if (pathname.startsWith("/calendario")) return "Calendário";
-  if (pathname.startsWith("/ranking") || pathname.includes("/ranking")) return "Ranking";
-  if (pathname.includes("/baterias/")) return "Corrida";
-  if (pathname.startsWith("/temporadas")) return "Temporadas";
-  if (pathname.startsWith("/pilotos/")) return "Perfil do Piloto";
-  if (pathname.startsWith("/pilotos")) return "Pilotos";
+  if (path.startsWith("/calendario")) return "Calendário";
+  if (path.startsWith("/ranking") || path.includes("/ranking")) return "Ranking";
+  if (path.includes("/baterias/")) return "Corrida";
+  if (path.startsWith("/pilotos/")) return "Perfil do Piloto";
+  if (path.startsWith("/pilotos")) return "Pilotos";
   return homeTitle;
 }
 
 function activeForPath(pathname: string) {
-  if (pathname.startsWith("/calendario")) return "calendar";
-  if (pathname.startsWith("/temporadas")) return "ranking";
-  if (pathname.startsWith("/ranking") || pathname.includes("/ranking")) return "ranking";
-  if (pathname.startsWith("/pilotos")) return "drivers";
+  if (pathname === "/temporadas") return "ranking";
+  const { path } = seasonContext(pathname);
+
+  if (path.startsWith("/calendario")) return "calendar";
+  if (path.includes("/baterias/")) return "calendar";
+  if (path.startsWith("/ranking") || path.includes("/ranking")) return "ranking";
+  if (path.startsWith("/pilotos")) return "drivers";
   return "home";
 }
 
@@ -36,11 +50,12 @@ export function TopBar() {
   const pathname = usePathname();
   const isAdmin = pathname.startsWith("/admin");
   const title = titleForPath(pathname);
+  const { basePath } = seasonContext(pathname);
 
   return (
     <header className={`topbar ${isAdmin ? "dark" : ""}`}>
       <div className="topbar-side" />
-      <Link className={`chrome-title ${title === homeTitle ? "brand" : ""}`} href="/">
+      <Link className={`chrome-title ${title === homeTitle ? "brand" : ""}`} href={basePath || "/"}>
         {title}
       </Link>
       <Link className="admin-lock" href="/admin" aria-label="Acesso administrativo">
@@ -55,14 +70,16 @@ export function BottomNav() {
   if (pathname.startsWith("/admin")) return null;
 
   const active = activeForPath(pathname);
+  const { basePath } = seasonContext(pathname);
 
   return (
     <nav className="bottom-nav" aria-label="Navegação principal">
       {navItems.map((item) => {
         const Icon = item.icon;
         const on = active === item.id;
+        const href = basePath ? `${basePath}${item.path === "/" ? "" : item.path}` : item.path;
         return (
-          <Link className={on ? "active" : ""} key={item.href} href={item.href}>
+          <Link className={on ? "active" : ""} key={item.path} href={href}>
             <Icon size={22} strokeWidth={on ? 2.4 : 1.85} />
             <span>{item.label}</span>
           </Link>
