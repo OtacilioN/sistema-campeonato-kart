@@ -39,6 +39,20 @@ Avoid reintroducing `Competitor`, `Race` or `RaceResult` as primary domain names
 - Preserve `docs/documentacao-processo.md` as historical process documentation.
 - Prefer ADRs only for hard-to-reverse, surprising trade-off decisions.
 
+## Neon
+
+Production data is hosted in Neon. Do not paste or save the raw `DATABASE_URL` in docs, commits, chat summaries or memories because it contains database credentials.
+
+To recover the production database connection through the Neon plugin:
+
+1. Search for `velocidade` in Neon and select project `velocidade-quase-maxima`.
+2. Confirm project ID `lucky-sound-69319320`.
+3. Use the default branch `main` (`br-broad-cherry-ajrvoskf`).
+4. Use database `neondb` and the owner role when a connection string is required.
+5. Retrieve the URL only through the Neon plugin `get_connection_string` or the Neon console, then pass it directly as process environment for one command. Do not write it to tracked files.
+
+For production schema changes, prefer `prisma migrate deploy` with a transient `DATABASE_URL` from Neon. If a migration is applied through Neon SQL tools instead, also keep `_prisma_migrations` consistent with the local migration name and checksum.
+
 ## Validation
 
 Before finishing implementation tasks, run:
