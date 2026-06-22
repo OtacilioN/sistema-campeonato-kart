@@ -1428,6 +1428,43 @@ h3 {
   gap: 14px;
 }
 
+.calendar-event-card {
+  display: grid;
+  gap: 12px;
+}
+
+.calendar-event-link {
+  display: block;
+}
+
+.calendar-add-button {
+  align-items: center;
+  background: var(--surface-muted);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 700;
+  gap: 8px;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 12px;
+  text-align: center;
+  width: 100%;
+}
+
+.calendar-add-button:hover {
+  background: var(--racing-black);
+  border-color: var(--racing-black);
+  color: var(--text-inverse);
+}
+
+.calendar-add-button.standalone {
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+
 .event-body {
   flex: 1;
   min-width: 0;

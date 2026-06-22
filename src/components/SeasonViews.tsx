@@ -18,6 +18,7 @@ import {
   VzIcon,
 } from "@/components/VelozesUI";
 import { batteryPathSlug, batteryStatusLabel, ordinal, resultStatusLabel } from "@/lib/domain/labels";
+import { googleCalendarBatteryUrl } from "@/lib/domain/calendar";
 import { formatDateTime } from "@/lib/domain/time";
 import { getActiveSeason, getPilotProfile, getPublicRanking, getSeasonBySlug } from "@/lib/data/public";
 import type { RankingRow } from "@/lib/domain/types";
@@ -301,10 +302,11 @@ export async function SeasonCalendarView({
           {visibleBatteries.map((battery) => {
             const date = dateParts(battery.scheduledAt);
             const href = `/temporadas/${season?.slug}/baterias/${batteryPathSlug(battery.number)}`;
+            const googleCalendarUrl = season ? googleCalendarBatteryUrl({ ...battery, season: { name: season.name } }) : null;
 
             return (
-              <Link href={href} key={battery.id}>
-                <VzCard className={selectedPeriod === "proximos" && battery.id === nextId ? "next-event-card" : ""}>
+              <VzCard className={`calendar-event-card ${selectedPeriod === "proximos" && battery.id === nextId ? "next-event-card" : ""}`} key={battery.id}>
+                <Link className="calendar-event-link" href={href}>
                   <div className="event-card">
                     <DateBlock day={date.day} dow={date.dow} mon={date.mon} />
                     <div className="event-body">
@@ -323,8 +325,14 @@ export async function SeasonCalendarView({
                       </div>
                     </div>
                   </div>
-                </VzCard>
-              </Link>
+                </Link>
+                {googleCalendarUrl ? (
+                  <a className="calendar-add-button" href={googleCalendarUrl} rel="noreferrer" target="_blank">
+                    <VzIcon name="calendar-plus" size={17} />
+                    Adicionar ao Google Calendar
+                  </a>
+                ) : null}
+              </VzCard>
             );
           })}
         </div>

@@ -4,6 +4,7 @@ import { deleteBatteryVideoAction, uploadBatteryVideoAction } from "@/app/action
 import { LapCharts } from "@/components/LapCharts";
 import { CheckeredFlag, SectionHead, VzButton, VzCard, VzIcon } from "@/components/VelozesUI";
 import { batteryStatusLabel, ordinal, resultStatusLabel } from "@/lib/domain/labels";
+import { googleCalendarBatteryUrl } from "@/lib/domain/calendar";
 import { formatDateTime } from "@/lib/domain/time";
 import { parseYouTubeVideoLink } from "@/lib/domain/youtube";
 import { getBatteryDetail } from "@/lib/data/public";
@@ -28,6 +29,7 @@ export default async function BatteryPage({ params, searchParams }: BatteryPageP
 
   const batteryPath = `/temporadas/${seasonSlug}/baterias/${batterySlug}`;
   const seasonCalendarPath = `/temporadas/${seasonSlug}/calendario?periodo=anteriores`;
+  const googleCalendarUrl = googleCalendarBatteryUrl(battery);
   const canUploadVideo = Boolean(process.env.VIDEOMAKER_PASSWORD);
 
   return (
@@ -72,6 +74,13 @@ export default async function BatteryPage({ params, searchParams }: BatteryPageP
           <strong>{battery.results.length}</strong>
         </div>
       </div>
+
+      {googleCalendarUrl ? (
+        <a className="calendar-add-button standalone" href={googleCalendarUrl} rel="noreferrer" target="_blank">
+          <VzIcon name="calendar-plus" size={17} />
+          Adicionar ao Google Calendar
+        </a>
+      ) : null}
 
       {battery.status !== "CONFIRMED" ? (
         <VzCard>
