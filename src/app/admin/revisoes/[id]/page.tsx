@@ -99,7 +99,7 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
               <input name={`rows.${index}.position`} defaultValue={row.position ?? ""} />
               <input name={`rows.${index}.pilotNumber`} defaultValue={row.pilotNumber ?? ""} />
               <input name={`rows.${index}.fullName`} defaultValue={row.fullName} required />
-              <input name={`rows.${index}.uf`} defaultValue={row.uf} required />
+              <input name={`rows.${index}.uf`} defaultValue={row.uf ?? ""} />
               <select name={`rows.${index}.status`} defaultValue={row.status}>
                 <option value="CLASSIFIED">Classificado</option>
                 <option value="NC">NC</option>

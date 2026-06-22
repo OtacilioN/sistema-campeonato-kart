@@ -35,7 +35,7 @@ export default async function RankingSeasonPage({ params }: RankingSeasonPagePro
               <span className={`rank-pos ${pilot.rank <= 3 ? `top-${pilot.rank}` : ""}`}>{pilot.rank}</span>
               <span className="vz-avatar"><VzIcon name="user" size={20} /></span>
               <span className="ranking-driver">
-                <span><strong>{pilot.pilotName}</strong><em>{pilot.uf}</em></span>
+                <span><strong>{pilot.pilotName}</strong><em>{pilot.uf ?? "UF não informada"}</em></span>
                 <span className="ranking-months"><small>bruto <b>{pilot.grossPoints}</b></small><small>descarte <b>{pilot.discardedPoints}</b></small></span>
               </span>
               <span className="ranking-total"><strong>{pilot.finalPoints}</strong><small>pts</small><VzIcon name="chevron-right" size={16} /></span>

@@ -5,7 +5,7 @@ Glossario do dominio do app Velozes, um sistema para acompanhamento de campeonat
 ## Language
 
 **Piloto**:
-Pessoa identificada por nome completo e UF que participa das baterias do campeonato e tem resultados, pontuacao, ranking e historico associados ao seu nome. Dois pilotos com o mesmo nome completo e UFs diferentes sao pilotos distintos.
+Pessoa identificada por nome completo que participa das baterias do campeonato e tem resultados, pontuacao, ranking e historico associados ao seu nome. UF e um dado auxiliar opcional vindo do documento, mas nao faz parte da identidade do piloto. Dois pilotos com o mesmo nome completo sao conflito, mesmo quando o documento informa UFs diferentes.
 _Avoid_: Competidor, corredor, driver
 
 **Bateria**:

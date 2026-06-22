@@ -57,7 +57,7 @@ function parseGap(tokens: string[]) {
 
 function parseOfficialRow(line: string): ReviewRow | null {
   const match = line.match(
-    /^(NC|\d+)\s+(\d+)\s+(.+?)\s+(\d+)\s+(\d{2}:\d{2}\.\d{3})\s+(\d{2}:\d{2}:\d{2}\.\d{3})\s+(.+?)\s+(\d{2}:\d{2}\.\d{3})\s+(\d+)\s+([\d,]+)\s+([A-Z]{2})$/,
+    /^(NC|\d+)\s+(\d+)\s+(.+?)\s+(\d+)\s+(\d{2}:\d{2}\.\d{3})\s+(\d{2}:\d{2}:\d{2}\.\d{3})\s+(.+?)\s+(\d{2}:\d{2}\.\d{3})\s+(\d+)\s+([\d,]+)(?:\s+([A-Z]{2}))?$/,
   );
   if (!match) return null;
 
@@ -71,7 +71,7 @@ function parseOfficialRow(line: string): ReviewRow | null {
 
   return {
     fullName: rawName.trim(),
-    uf,
+    uf: uf ?? null,
     pilotNumber: Number(rawNumber),
     position,
     status,
@@ -95,6 +95,10 @@ function parseOfficialRow(line: string): ReviewRow | null {
 
 export async function parseOfficialReport(input: Buffer | Uint8Array | File): Promise<ParsedOfficialReport> {
   const rawText = await extractText(input);
+  return parseOfficialReportText(rawText);
+}
+
+export function parseOfficialReportText(rawText: string): ParsedOfficialReport {
   const header = parseHeader(rawText);
   const bestLapMatch = rawText.match(/Melhor volta:\s*(.+?)\s+\((\d{2}:\d{2}\.\d{3})\)/i);
   const bestLapPilotName = bestLapMatch?.[1]?.trim() ?? null;

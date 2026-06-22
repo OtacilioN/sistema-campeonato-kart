@@ -4,7 +4,7 @@ export type BatteryResultInput = {
   pilotId: string;
   pilotName: string;
   pilotSlug: string;
-  uf: string;
+  uf: string | null;
   batteryId: string;
   batteryNumber: number;
   status: ResultStatusValue;
@@ -25,7 +25,7 @@ export type RankingRow = {
   pilotId: string;
   pilotName: string;
   pilotSlug: string;
-  uf: string;
+  uf: string | null;
   grossPoints: number;
   discardedPoints: number;
   finalPoints: number;
@@ -35,7 +35,7 @@ export type RankingRow = {
 
 export type ReviewRow = {
   fullName: string;
-  uf: string;
+  uf: string | null;
   pilotNumber: number | null;
   position: number | null;
   status: ResultStatusValue;

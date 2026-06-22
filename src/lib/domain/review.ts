@@ -38,7 +38,7 @@ export function parseManualReviewRows(input: string): ReviewRow[] {
 
       return {
         fullName,
-        uf: uf?.toUpperCase() ?? "",
+        uf: uf?.toUpperCase() || null,
         pilotNumber: rawNumber ? Number(rawNumber) : null,
         position,
         status,
@@ -76,7 +76,7 @@ export function parseReviewRowsFromForm(formData: FormData): ReviewRow[] {
 
     const row: ReviewRow = {
       fullName: String(formData.get(`rows.${index}.fullName`) ?? "").trim(),
-      uf: String(formData.get(`rows.${index}.uf`) ?? "").trim().toUpperCase(),
+      uf: stringOrNull(formData.get(`rows.${index}.uf`))?.toUpperCase() ?? null,
       pilotNumber: numberOrNull(formData.get(`rows.${index}.pilotNumber`)),
       position,
       status,
@@ -106,6 +106,18 @@ export function parseReviewRowsFromForm(formData: FormData): ReviewRow[] {
   }
 
   return rows;
+}
+
+export function ensureUniqueReviewPilotNames(rows: Pick<ReviewRow, "fullName">[]) {
+  const seen = new Set<string>();
+
+  for (const row of rows) {
+    const key = row.fullName.toLowerCase();
+    if (seen.has(key)) {
+      throw new Error(`Piloto duplicado na bateria: ${row.fullName}`);
+    }
+    seen.add(key);
+  }
 }
 
 function numberOrNull(value: FormDataEntryValue | null) {

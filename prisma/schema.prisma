@@ -10,7 +10,7 @@ datasource db {
 model Pilot {
   id          String          @id @default(cuid())
   fullName    String
-  uf          String
+  uf          String?
   displayName String?
   slug        String          @unique
   active      Boolean         @default(true)
@@ -19,7 +19,7 @@ model Pilot {
   results     BatteryResult[]
   lapToLaps   LapToLap[]
 
-  @@unique([fullName, uf])
+  @@unique([fullName])
 }
 
 model Season {

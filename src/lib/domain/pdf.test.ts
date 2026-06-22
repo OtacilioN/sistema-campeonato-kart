@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
-import { parseLapToLap, parseOfficialReport, validateLapToLap } from "./pdf";
+import { parseLapToLap, parseOfficialReport, parseOfficialReportText, validateLapToLap } from "./pdf";
 import { namesMatch, pilotSlug } from "./text";
 
 describe("official report parser", () => {
@@ -23,6 +23,27 @@ describe("official report parser", () => {
       uf: "PB",
     });
     expect(parsed.rows.find((row) => row.fullName === "Rogério Silva")?.bestLapBonus).toBe(1);
+  });
+
+  it("accepts official result rows without UF", () => {
+    const parsed = parseOfficialReportText(
+      [
+        "BATERIA 6",
+        "Corrida",
+        "Circuito Paladino",
+        "RENTAL",
+        "DATA/HORA: 20/06/2026 18:16:50",
+        "Melhor volta: Ana Piloto (01:10.000)",
+        "1 99 Ana Piloto 2 01:10.000 00:15:00.000 --- --- 01:11.000 11 69,100",
+      ].join("\n"),
+    );
+
+    expect(parsed.rows).toHaveLength(1);
+    expect(parsed.rows[0]).toMatchObject({
+      fullName: "Ana Piloto",
+      uf: null,
+      bestLapBonus: 1,
+    });
   });
 });
 
@@ -58,6 +79,6 @@ describe("name normalization", () => {
   });
 
   it("builds public pilot slugs", () => {
-    expect(pilotSlug("Otacilio Saraiva Maia Neto", "PB")).toBe("otacilio-saraiva-maia-neto-pb");
+    expect(pilotSlug("Otacilio Saraiva Maia Neto")).toBe("otacilio-saraiva-maia-neto");
   });
 });

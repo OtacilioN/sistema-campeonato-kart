@@ -85,7 +85,7 @@ export default async function BatteryPage({ params }: BatteryPageProps) {
                     <h2>{result.pilot.displayName || result.pilot.fullName}</h2>
                   </Link>
                   <p>
-                    #{result.pilotNumber ?? "—"} · {result.pilot.uf} · {resultStatusLabel(result.status)}
+                    #{result.pilotNumber ?? "—"} · {result.pilot.uf ?? "UF não informada"} · {resultStatusLabel(result.status)}
                     <span>{ordinal(result.position)}</span>
                   </p>
                 </div>

@@ -37,6 +37,6 @@ export function slugify(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
-export function pilotSlug(fullName: string, uf: string) {
-  return `${slugify(fullName)}-${uf.toLowerCase()}`;
+export function pilotSlug(fullName: string) {
+  return slugify(fullName);
 }

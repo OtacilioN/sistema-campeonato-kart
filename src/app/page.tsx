@@ -79,7 +79,7 @@ export default async function Home() {
               <RankRow
                 href={`/pilotos/${pilot.pilotSlug}`}
                 key={pilot.pilotId}
-                meta={`${pilot.uf} · bruto ${pilot.grossPoints} · descarte ${pilot.discardedPoints}`}
+                meta={`${pilot.uf ?? "UF não informada"} · bruto ${pilot.grossPoints} · descarte ${pilot.discardedPoints}`}
                 name={pilot.pilotName}
                 podium
                 points={pilot.finalPoints}

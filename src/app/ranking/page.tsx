@@ -42,7 +42,7 @@ export default async function RankingPage() {
               <span className="ranking-driver">
                 <span>
                   <strong>{pilot.pilotName}</strong>
-                  <em>{pilot.uf}</em>
+                  <em>{pilot.uf ?? "UF não informada"}</em>
                 </span>
                 <span className="ranking-months">
                   {pilot.entries.map((entry) => (

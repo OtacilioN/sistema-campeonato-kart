@@ -284,7 +284,7 @@ A tela de perfil deve consolidar os dados de um competidor.
 
 - O perfil deve ser alimentado pelo report oficial.
 - Quando houver lap-to-lap validado, o perfil deve permitir acesso a análises mais detalhadas.
-- O sistema deve indicar que o histórico do piloto é consolidado por nome completo + UF.
+- O sistema deve indicar que o histórico do piloto é consolidado por nome completo.
 
 ---
 
@@ -411,7 +411,7 @@ A revisão deve exibir:
 - Quantidade de NC.
 - Melhor volta geral.
 - Pilotos novos detectados.
-- Pilotos já existentes encontrados por nome completo + UF.
+- Pilotos já existentes encontrados por nome completo.
 - Alertas de dados ausentes ou inconsistentes.
 
 ---
@@ -486,21 +486,22 @@ O lap-to-lap tem estrutura fixa e é individual por competidor.
 A identidade do competidor ao longo das corridas será definida por:
 
 ```text
-nome completo + UF
+nome completo
 ```
 
 Exemplo:
 
 ```text
-Otacilio Saraiva Maia Neto + PB
+Otacilio Saraiva Maia Neto
 ```
 
 ### Regras
 
-- O sistema deve usar nome completo + UF para rastrear o mesmo competidor ao longo da temporada.
-- Se um piloto aparecer novamente com o mesmo nome completo e mesma UF, deve ser tratado como o mesmo competidor.
+- O sistema deve usar nome completo para rastrear o mesmo competidor ao longo da temporada.
+- UF é metadado opcional do documento e não compõe a identidade do piloto.
+- Se um piloto aparecer novamente com o mesmo nome completo, deve ser tratado como o mesmo competidor.
 - Se um piloto novo aparecer no report oficial, o sistema deve sugerir criação automática.
-- Se houver dois competidores com o mesmo nome completo, o sistema deve exibir alerta e pedir renomeação de um deles.
+- Se houver dois competidores com o mesmo nome completo, mesmo com UFs diferentes, o sistema deve exibir alerta e pedir renomeação de um deles.
 
 ### Mensagem de alerta
 
@@ -555,7 +556,7 @@ Nome duplicado detectado. Renomeie um dos pilotos antes de confirmar a importaç
 ```text
 id
 nomeCompleto
-uf
+uf opcional
 nomeExibicao
 ativo
 createdAt
@@ -787,4 +788,4 @@ A primeira versão validada dos wireframes deve ser considerada baseline visual 
 
 ## 23. Resumo
 
-O Velozes será um PWA mobile first para campeonato amador de kart. O sistema substituirá a planilha atual, exibindo ranking, calendário, perfis e análise de corrida. O PDF oficial será a fonte de verdade dos resultados, enquanto o lap-to-lap será usado como complemento analítico. A identidade dos pilotos será controlada por nome completo + UF. O admin poderá importar PDFs, inserir dados manualmente, corrigir resultados e recalcular o ranking. O projeto será open source, licenciado sob MIT, desenvolvido em Next.js, publicado no GitHub e hospedado na Vercel Hobby.
+O Velozes será um PWA mobile first para campeonato amador de kart. O sistema substituirá a planilha atual, exibindo ranking, calendário, perfis e análise de corrida. O PDF oficial será a fonte de verdade dos resultados, enquanto o lap-to-lap será usado como complemento analítico. A identidade dos pilotos será controlada por nome completo. O admin poderá importar PDFs, inserir dados manualmente, corrigir resultados e recalcular o ranking. O projeto será open source, licenciado sob MIT, desenvolvido em Next.js, publicado no GitHub e hospedado na Vercel Hobby.

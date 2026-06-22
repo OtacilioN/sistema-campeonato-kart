@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { Prisma } from "@prisma/client";
 import { ADMIN_COOKIE, isAdminCookieValid } from "@/lib/admin-auth";
-import { parseManualReviewRows, parseReviewRowsFromForm, reviewPayloadFromOfficialReport, type ReviewPayload } from "@/lib/domain/review";
+import { ensureUniqueReviewPilotNames, parseManualReviewRows, parseReviewRowsFromForm, reviewPayloadFromOfficialReport, type ReviewPayload } from "@/lib/domain/review";
 import { pilotSlug } from "@/lib/domain/text";
 import { parseBrazilianDateTime } from "@/lib/domain/time";
 import { prisma } from "@/lib/prisma";
@@ -171,12 +171,7 @@ export async function confirmReviewAction(formData: FormData) {
   });
   if (!review) throw new Error("Revisão não encontrada.");
 
-  const seen = new Set<string>();
-  for (const row of rows) {
-    const key = `${row.fullName.toLowerCase()}|${row.uf}`;
-    if (seen.has(key)) throw new Error(`Piloto duplicado na bateria: ${row.fullName} ${row.uf}`);
-    seen.add(key);
-  }
+  ensureUniqueReviewPilotNames(rows);
 
   const reviewPayload = review.reviewPayload as unknown as ReviewPayload;
 
@@ -300,14 +295,25 @@ export async function uploadLapToLapAction(formData: FormData) {
   redirect(returnTo);
 }
 
-async function upsertPilot(tx: Prisma.TransactionClient, fullName: string, uf: string) {
-  return tx.pilot.upsert({
-    where: { fullName_uf: { fullName, uf } },
-    update: { active: true },
-    create: {
+async function upsertPilot(tx: Prisma.TransactionClient, fullName: string, uf: string | null) {
+  const existing = await tx.pilot.findUnique({ where: { fullName } });
+
+  if (existing) {
+    return tx.pilot.update({
+      where: { id: existing.id },
+      data: {
+        active: true,
+        uf: existing.uf ?? uf,
+        slug: pilotSlug(fullName),
+      },
+    });
+  }
+
+  return tx.pilot.create({
+    data: {
       fullName,
       uf,
-      slug: pilotSlug(fullName, uf),
+      slug: pilotSlug(fullName),
     },
   });
 }
