@@ -1531,6 +1531,176 @@ h3 {
   margin-top: 16px;
 }
 
+.calendar-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-card);
+}
+
+@media (min-width: 900px) {
+  :root {
+    --content-max: 1180px;
+    --desktop-rail-width: 188px;
+  }
+
+  body {
+    background:
+      linear-gradient(90deg, rgba(7, 7, 7, 0.028) 1px, transparent 1px),
+      var(--off-white);
+    background-size: 28px 28px;
+  }
+
+  .topbar {
+    border-left: 1px solid var(--border-light);
+    border-right: 1px solid var(--border-light);
+    height: 64px;
+    max-width: var(--content-max);
+    min-height: 64px;
+    padding: 14px 24px;
+    width: calc(100% - 48px);
+  }
+
+  .topbar-side {
+    display: none;
+  }
+
+  .chrome-title {
+    font-size: 28px;
+    text-align: left;
+  }
+
+  .admin-lock {
+    flex-basis: 42px;
+    height: 42px;
+    margin-right: -8px;
+    width: 42px;
+  }
+
+  .app-shell {
+    display: block;
+    max-width: var(--content-max);
+    min-height: calc(100vh - 64px);
+    padding: 0 24px 48px;
+  }
+
+  .vz-page {
+    gap: 24px;
+    padding: 24px 0 48px;
+  }
+
+  .vz-page:not(.admin-mock) {
+    padding-left: calc(var(--desktop-rail-width) + 24px);
+  }
+
+  .bottom-nav {
+    border: 1px solid var(--border-light);
+    border-radius: 16px;
+    box-shadow: var(--shadow-card);
+    gap: 4px;
+    grid-template-columns: 1fr;
+    height: auto;
+    left: max(24px, calc(50% - var(--content-max) / 2 + 24px));
+    margin: 0;
+    max-width: none;
+    padding: 8px;
+    position: fixed;
+    top: 88px;
+    width: var(--desktop-rail-width);
+  }
+
+  .bottom-nav a {
+    border-radius: 12px;
+    flex-direction: row;
+    font-size: 13px;
+    gap: 10px;
+    height: 46px;
+    justify-content: flex-start;
+    padding: 0 12px;
+  }
+
+  .bottom-nav a.active,
+  .bottom-nav a:hover {
+    background: var(--surface-muted);
+  }
+
+  .home-page {
+    align-items: start;
+    display: grid;
+    grid-template-columns: minmax(0, 1.08fr) minmax(340px, 0.92fr);
+  }
+
+  .home-page > .vz-card:first-child {
+    grid-row: span 2;
+  }
+
+  .home-page > .vz-button {
+    grid-column: 1 / -1;
+    justify-self: start;
+    width: auto;
+  }
+
+  .calendar-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  }
+
+  .ranking-card {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .ranking-row {
+    grid-template-columns: 40px 46px minmax(0, 1fr) 112px;
+    padding: 16px 0;
+  }
+
+  .ranking-driver strong {
+    font-size: 17px;
+  }
+
+  .rule-mini-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .profile-page {
+    align-items: start;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .profile-page > .vz-card:first-child,
+  .profile-page > .profile-stats,
+  .profile-page > .vz-button {
+    grid-column: 1 / -1;
+  }
+
+  .profile-stats,
+  .race-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .battery-results-list {
+    display: grid !important;
+    grid-template-columns: 1fr;
+  }
+
+  .race-result-stats {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .admin-action-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-list {
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  }
+
+  .admin-mock .form {
+    max-width: none;
+  }
+}
+
 @media (max-width: 380px) {
   .stat-tiles,
   .race-result-stats {

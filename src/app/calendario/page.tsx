@@ -22,7 +22,7 @@ export default async function CalendarioPage() {
   const nextId = upcoming[0]?.id ?? batteries.find((battery) => battery.status !== "CANCELED")?.id;
 
   return (
-    <div className="vz-page tight">
+    <div className="vz-page tight calendar-page">
       <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
         <VzChip active>Próximos</VzChip>
         <VzChip>Anteriores</VzChip>
@@ -35,7 +35,7 @@ export default async function CalendarioPage() {
       />
 
       {batteries.length ? (
-        <div style={{ display: "flex", flexDirection: "column", gap: "var(--gap-card)" }}>
+        <div className="calendar-list">
           {batteries.map((battery) => {
             const date = dateParts(battery.scheduledAt);
             const href = `/temporadas/${season?.slug}/baterias/${batteryPathSlug(battery.number)}`;

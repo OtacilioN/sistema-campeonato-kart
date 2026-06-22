@@ -15,7 +15,7 @@ function titleForPath(pathname: string) {
   if (pathname.startsWith("/admin")) return "Admin";
   if (pathname.startsWith("/calendario")) return "Calendário";
   if (pathname.startsWith("/ranking") || pathname.includes("/ranking")) return "Ranking";
-  if (pathname.startsWith("/pilotos/")) return "Perfil do Competidor";
+  if (pathname.startsWith("/pilotos/")) return "Perfil do Piloto";
   if (pathname.startsWith("/pilotos")) return "Pilotos";
   if (pathname.includes("/baterias/")) return "Corrida";
   return "Velozes";

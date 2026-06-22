@@ -160,7 +160,7 @@ export default async function AdminPage() {
 
   if (!configured) {
     return (
-      <div className="vz-page tight">
+      <div className="vz-page tight admin-mock">
         <VzCard>
           <SectionHead icon="lock" sub="Defina ADMIN_PASSWORD no ambiente local ou na Vercel para habilitar o acesso administrativo." title="Admin bloqueado" />
           <div className="notice">Não existe senha padrão de desenvolvimento.</div>
@@ -195,7 +195,7 @@ export default async function AdminPage() {
   }
 
   return (
-    <div className="vz-page tight">
+    <div className="vz-page tight admin-mock">
       <VzCard>
         <SectionHead icon="lock" sub="Use a senha configurada em ADMIN_PASSWORD. O acesso inicial usa senha única, sem conta de administrador." title="Entrar" />
       </VzCard>

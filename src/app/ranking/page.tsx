@@ -13,7 +13,7 @@ export default async function RankingPage() {
   const { season, ranking } = await getPublicRanking();
 
   return (
-    <div className="vz-page tight">
+    <div className="vz-page tight ranking-page">
       <SectionHead
         icon="trophy"
         right={<VzIcon name="chevron-down" size={18} />}

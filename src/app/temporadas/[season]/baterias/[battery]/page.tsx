@@ -25,7 +25,7 @@ export default async function BatteryPage({ params }: BatteryPageProps) {
   const returnTo = `/temporadas/${battery.season.slug}/baterias/${batteryPathSlug(battery.number)}`;
 
   return (
-    <div className="vz-page tight">
+    <div className="vz-page tight battery-page">
       <button className="race-switcher" type="button">
         <CheckeredFlag />
         <span>Trocar de corrida</span>
@@ -75,7 +75,7 @@ export default async function BatteryPage({ params }: BatteryPageProps) {
       ) : null}
 
       {battery.status === "CONFIRMED" ? (
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <div className="battery-results-list" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {battery.results.map((result) => (
             <VzCard key={result.id}>
               <div className="race-driver-strip">

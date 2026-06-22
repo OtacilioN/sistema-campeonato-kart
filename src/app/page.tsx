@@ -28,7 +28,7 @@ export default async function Home() {
   const podium = rankingData.ranking.slice(0, 3);
 
   return (
-    <div className="vz-page">
+    <div className="vz-page home-page">
       <VzCard>
         <div className="event-card" style={{ marginBottom: 14 }}>
           <IconTile name="calendar" />

@@ -16,7 +16,7 @@ export default async function RankingSeasonPage({ params }: RankingSeasonPagePro
   if (!season) notFound();
 
   return (
-    <div className="vz-page tight">
+    <div className="vz-page tight ranking-page">
       <SectionHead icon="trophy" sub="Ranking compartilhável desta temporada." title={season.name} />
       <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 2 }}>
         {["Jan", "Fev", "Mar", "Abr", "Geral"].map((month) => (

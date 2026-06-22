@@ -39,7 +39,7 @@ export default async function PilotPage({ params }: PilotPageProps) {
   const bestRace = [...confirmedResults].sort((a, b) => (a.position ?? 999) - (b.position ?? 999))[0];
 
   return (
-    <div className="vz-page tight">
+    <div className="vz-page tight profile-page">
       <VzCard>
         <div className="profile-identity">
           <Avatar size={64} />
