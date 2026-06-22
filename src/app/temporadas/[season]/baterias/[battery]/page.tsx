@@ -1,9 +1,9 @@
-import { Clock, Flag, Upload } from "lucide-react";
+import { Upload } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { uploadLapToLapAction } from "@/app/actions";
 import { LapCharts } from "@/components/LapCharts";
-import { PageHeader } from "@/components/PageHeader";
+import { Avatar, CheckeredFlag, VzButton, VzCard, VzIcon } from "@/components/VelozesUI";
 import { batteryPathSlug, batteryStatusLabel, ordinal, resultStatusLabel } from "@/lib/domain/labels";
 import { formatDateTime } from "@/lib/domain/time";
 import { getBatteryDetail } from "@/lib/data/public";
@@ -25,97 +25,101 @@ export default async function BatteryPage({ params }: BatteryPageProps) {
   const returnTo = `/temporadas/${battery.season.slug}/baterias/${batteryPathSlug(battery.number)}`;
 
   return (
-    <div className="grid">
-      <PageHeader
-        eyebrow={battery.season.name}
-        title={battery.label}
-        description={`${formatDateTime(battery.scheduledAt)} · ${battery.locationName} · ${battery.city}, ${battery.uf}`}
-      />
+    <div className="vz-page tight">
+      <button className="race-switcher" type="button">
+        <CheckeredFlag />
+        <span>Trocar de corrida</span>
+        <VzIcon name="chevron-down" />
+      </button>
 
-      <section className="card">
-        <div className="section-row">
+      <VzCard>
+        <div className="race-summary">
+          <Avatar size={48} />
           <div>
-            <h2>Resultado oficial</h2>
-            <p className="muted">{battery.category ?? "Rental"} · {battery.type ?? "Corrida"}</p>
+            <h1>{battery.label}</h1>
+            <span>
+              <small>Status</small>
+              <b>{batteryStatusLabel(battery.status)}</b>
+            </span>
           </div>
-          <span className="pill">{batteryStatusLabel(battery.status)}</span>
+          <div>
+            <small>Temporada</small>
+            <b>{battery.season.name}</b>
+          </div>
         </div>
-      </section>
+      </VzCard>
+
+      <div className="stat-tiles race-stats">
+        <div className="stat-tile">
+          <span>Data</span>
+          <VzIcon name="clock" size={18} />
+          <strong>{formatDateTime(battery.scheduledAt)}</strong>
+        </div>
+        <div className="stat-tile">
+          <span>Categoria</span>
+          <VzIcon name="flag" size={18} />
+          <strong>{battery.category ?? "Rental"}</strong>
+        </div>
+        <div className="stat-tile">
+          <span>Pilotos</span>
+          <VzIcon name="users" size={18} />
+          <strong>{battery.results.length}</strong>
+        </div>
+      </div>
 
       {battery.status !== "CONFIRMED" ? (
-        <section className="card">
-          <h2>Resultado em preparação</h2>
+        <VzCard>
+          <h2 style={{ fontSize: 20, textTransform: "none" }}>Resultado em preparação</h2>
           <p className="muted">Resultados públicos aparecem somente depois da confirmação administrativa.</p>
-        </section>
-      ) : null}
-
-      {battery.status === "CONFIRMED" && battery.results.length === 0 ? (
-        <section className="card">
-          <h2>Nenhum resultado confirmado</h2>
-          <p className="muted">A bateria está confirmada, mas ainda não possui pilotos vinculados.</p>
-        </section>
+        </VzCard>
       ) : null}
 
       {battery.status === "CONFIRMED" ? (
-        <section className="table">
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {battery.results.map((result) => (
-            <article className="result-card" key={result.id}>
-              <div className="row embedded">
-                <span className="pos">{ordinal(result.position)}</span>
+            <VzCard key={result.id}>
+              <div className="race-driver-strip">
+                <Avatar size={48} />
                 <div>
                   <Link href={`/pilotos/${result.pilot.slug}`}>
-                    <strong>{result.pilot.displayName || result.pilot.fullName}</strong>
+                    <h2>{result.pilot.displayName || result.pilot.fullName}</h2>
                   </Link>
-                  <p className="meta">
-                    #{result.pilotNumber ?? "—"} · {result.pilot.uf} · {resultStatusLabel(result.status)} · {result.finalPoints} pts
+                  <p>
+                    #{result.pilotNumber ?? "—"} · {result.pilot.uf} · {resultStatusLabel(result.status)}
+                    <span>{ordinal(result.position)}</span>
                   </p>
                 </div>
-                <span className="score">{result.totalTime ?? "—"}</span>
+                <div>
+                  <small>Pontos</small>
+                  <strong>{result.finalPoints}</strong>
+                </div>
               </div>
 
-              <div className="stat-grid">
-                <div className="mini-stat">
-                  <Clock size={16} />
-                  <span>TMV</span>
-                  <strong>{result.bestLapTime ?? "—"}</strong>
-                </div>
-                <div className="mini-stat">
-                  <Flag size={16} />
-                  <span>Voltas</span>
-                  <strong>{result.totalLaps ?? "—"}</strong>
-                </div>
-                <div className="mini-stat">
-                  <span>Base</span>
-                  <strong>{result.positionPoints}</strong>
-                </div>
-                <div className="mini-stat">
-                  <span>Bônus</span>
-                  <strong>{result.poleBonus + result.bestLapBonus}</strong>
-                </div>
-                <div className="mini-stat">
-                  <span>Pen.</span>
-                  <strong>{result.penaltyPoints}</strong>
-                </div>
+              <div className="stat-tiles race-result-stats">
+                <div className="stat-tile"><span>Melhor volta</span><VzIcon name="timer" size={16} /><strong>{result.bestLapTime ?? "—"}</strong></div>
+                <div className="stat-tile"><span>Tempo total</span><VzIcon name="clock" size={16} /><strong>{result.totalTime ?? "—"}</strong></div>
+                <div className="stat-tile"><span>Diferença p/ líder</span><VzIcon name="crown" size={16} /><strong>{result.gapToLeader ?? "—"}</strong></div>
+                <div className="stat-tile"><span>Diferença p/ anterior</span><VzIcon name="user" size={16} /><strong>{result.gapToPrevious ?? "—"}</strong></div>
+                <div className="stat-tile"><span>Última volta</span><VzIcon name="clock" size={16} /><strong>{result.lastLapTime ?? "—"}</strong></div>
+                <div className="stat-tile"><span>Total de voltas</span><VzIcon name="flag" size={16} /><strong>{result.totalLaps ?? "—"}</strong></div>
               </div>
 
               {result.lapToLap ? (
                 <div className="lap-section">
-                  <span className="pill">Lap-to-lap validado</span>
+                  <h2 style={{ fontSize: 20, textTransform: "none" }}>Volta por volta</h2>
                   <LapCharts laps={result.lapToLap.laps} />
                 </div>
               ) : (
-                <form className="upload-form" action={uploadLapToLapAction} encType="multipart/form-data">
-                  <input type="hidden" name="resultId" value={result.id} />
-                  <input type="hidden" name="returnTo" value={returnTo} />
-                  <input className="input file" name="file" type="file" accept="application/pdf" required />
-                  <button className="button secondary" type="submit">
-                    <Upload size={18} /> Enviar lap-to-lap
-                  </button>
+                <form action={uploadLapToLapAction} className="upload-form" encType="multipart/form-data">
+                  <input name="resultId" type="hidden" value={result.id} />
+                  <input name="returnTo" type="hidden" value={returnTo} />
+                  <input accept="application/pdf" className="input file" name="file" required type="file" />
+                  <VzButton type="submit" variant="dark"><Upload size={18} /> Enviar lap-to-lap</VzButton>
                 </form>
               )}
-            </article>
+            </VzCard>
           ))}
-        </section>
+        </div>
       ) : null}
     </div>
   );

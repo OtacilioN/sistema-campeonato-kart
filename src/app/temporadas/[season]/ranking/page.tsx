@@ -1,6 +1,5 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { PageHeader } from "@/components/PageHeader";
+import { SectionHead, VzCard, VzChip, VzIcon } from "@/components/VelozesUI";
 import { getPublicRanking } from "@/lib/data/public";
 
 export const dynamic = "force-dynamic";
@@ -17,32 +16,35 @@ export default async function RankingSeasonPage({ params }: RankingSeasonPagePro
   if (!season) notFound();
 
   return (
-    <div className="grid">
-      <PageHeader
-        eyebrow={season.name}
-        title="Ranking da temporada"
-        description="URL estável para compartilhamento do ranking de uma temporada específica."
-      />
-
-      {ranking.length ? (
-        <section className="table">
-          {ranking.map((pilot) => (
-            <Link className="row" href={`/pilotos/${pilot.pilotSlug}`} key={pilot.pilotId}>
-              <span className="pos">{pilot.rank}º</span>
-              <div>
-                <strong>{pilot.pilotName}</strong>
-                <p className="meta">Bruto {pilot.grossPoints} · descarte {pilot.discardedPoints} · vitórias {pilot.wins}</p>
-              </div>
-              <span className="score">{pilot.finalPoints}</span>
-            </Link>
-          ))}
-        </section>
-      ) : (
-        <section className="card">
-          <h2>Ranking ainda não iniciado</h2>
-          <p className="muted">Nenhuma bateria confirmada nesta temporada.</p>
-        </section>
-      )}
+    <div className="vz-page tight">
+      <SectionHead icon="trophy" sub="Ranking compartilhável desta temporada." title={season.name} />
+      <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 2 }}>
+        {["Jan", "Fev", "Mar", "Abr", "Geral"].map((month) => (
+          <VzChip active={month === "Geral"} key={month}>{month}</VzChip>
+        ))}
+      </div>
+      <VzCard className="ranking-card">
+        <div className="ranking-header">
+          <span>Pos.</span>
+          <span>Piloto</span>
+          <span>Total de pontos</span>
+        </div>
+        {ranking.length ? (
+          ranking.map((pilot) => (
+            <a className="ranking-row" href={`/pilotos/${pilot.pilotSlug}`} key={pilot.pilotId}>
+              <span className={`rank-pos ${pilot.rank <= 3 ? `top-${pilot.rank}` : ""}`}>{pilot.rank}</span>
+              <span className="vz-avatar"><VzIcon name="user" size={20} /></span>
+              <span className="ranking-driver">
+                <span><strong>{pilot.pilotName}</strong><em>{pilot.uf}</em></span>
+                <span className="ranking-months"><small>bruto <b>{pilot.grossPoints}</b></small><small>descarte <b>{pilot.discardedPoints}</b></small></span>
+              </span>
+              <span className="ranking-total"><strong>{pilot.finalPoints}</strong><small>pts</small><VzIcon name="chevron-right" size={16} /></span>
+            </a>
+          ))
+        ) : (
+          <p className="muted" style={{ padding: "18px 0" }}>Ranking ainda não iniciado.</p>
+        )}
+      </VzCard>
     </div>
   );
 }

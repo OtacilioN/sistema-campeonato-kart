@@ -1,11 +1,26 @@
-import { ArrowRight, CalendarDays, Gauge, Trophy } from "lucide-react";
-import Link from "next/link";
-import { PageHeader } from "@/components/PageHeader";
-import { batteryPathSlug, batteryStatusLabel } from "@/lib/domain/labels";
+import { ChevronDown, ChevronRight } from "lucide-react";
+import { IconTile, RankRow, VzButton, VzCard, VzIcon } from "@/components/VelozesUI";
+import { batteryPathSlug } from "@/lib/domain/labels";
 import { formatDateTime } from "@/lib/domain/time";
 import { getActiveSeason, getPublicRanking } from "@/lib/data/public";
 
 export const dynamic = "force-dynamic";
+
+function eventDate(value: Date | null | undefined) {
+  if (!value) return "A definir";
+  return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short" }).format(value).replace(".", "").toUpperCase();
+}
+
+function averageSpeed(season: Awaited<ReturnType<typeof getActiveSeason>>) {
+  const speeds = season?.batteries.flatMap((battery) =>
+    battery.results
+      .map((result) => Number(result.averageSpeed ?? 0))
+      .filter((speed) => Number.isFinite(speed) && speed > 0),
+  ) ?? [];
+  if (!speeds.length) return "0,0";
+  const avg = speeds.reduce((sum, speed) => sum + speed, 0) / speeds.length;
+  return avg.toLocaleString("pt-BR", { maximumFractionDigits: 1 });
+}
 
 export default async function Home() {
   const [season, rankingData] = await Promise.all([getActiveSeason(), getPublicRanking()]);
@@ -13,88 +28,101 @@ export default async function Home() {
   const podium = rankingData.ranking.slice(0, 3);
 
   return (
-    <div className="grid">
-      <PageHeader
-        eyebrow={season?.name ?? "Temporada ativa"}
-        title="Velocidade Quase Máxima"
-        description="Ranking, calendário e análise volta a volta do campeonato no Circuito Internacional Paladino."
-      />
-
-      <section className="grid two">
-        <article className="card dark">
-          <span className="pill">Próximo evento</span>
-          <div className="spacer" />
-          <h2>{nextBattery?.label ?? "Nenhuma bateria cadastrada"}</h2>
-          <p className="muted">
-            {nextBattery
-              ? `${formatDateTime(nextBattery.scheduledAt)} · ${nextBattery.locationName} · ${nextBattery.city}, ${nextBattery.uf}`
-              : "Quando o admin cadastrar a temporada ativa, o calendário aparecerá aqui."}
-          </p>
-          <div className="spacer" />
-          <Link className="button" href="/calendario">
-            Ver calendário <ArrowRight size={18} />
-          </Link>
-        </article>
-
-        <article className="card">
-          <div className="stat">
-            <strong>{season?.batteries.length ?? 0}</strong>
-            <span>baterias cadastradas</span>
-          </div>
-          <p className="muted">
-            O ranking público usa somente resultados confirmados e aplica o descarte do pior resultado a partir de duas baterias.
-          </p>
-        </article>
-      </section>
-
-      <section className="grid two">
-        <article className="card">
-          <div className="section-row">
-            <h2>Pódio atual</h2>
-            <span className="pill">{season?.name ?? "Sem temporada"}</span>
-          </div>
-          <div className="spacer small" />
-          {podium.length ? (
-            <div className="table">
-              {podium.map((pilot) => (
-                <Link className="row" href={`/pilotos/${pilot.pilotSlug}`} key={pilot.pilotId}>
-                  <span className="pos">{pilot.rank}º</span>
-                  <div>
-                    <strong>{pilot.pilotName}</strong>
-                    <p className="meta">{pilot.uf} · bruto {pilot.grossPoints} · descarte {pilot.discardedPoints}</p>
-                  </div>
-                  <span className="score">{pilot.finalPoints}</span>
-                </Link>
-              ))}
+    <div className="vz-page">
+      <VzCard>
+        <div className="event-card" style={{ marginBottom: 14 }}>
+          <IconTile name="calendar" />
+          <div className="event-body">
+            <div style={{ color: "var(--text-secondary)", fontSize: 13, fontWeight: 500 }}>Próximo evento</div>
+            <div style={{ color: "var(--text-primary)", fontFamily: "var(--font-mono)", fontSize: 30, fontWeight: 700, lineHeight: 1.1 }}>
+              {eventDate(nextBattery?.scheduledAt)}
             </div>
-          ) : (
-            <p className="muted">Ranking ainda não iniciado.</p>
-          )}
-          <div className="spacer small" />
-          <Link className="button secondary" href="/ranking">
-            Ranking completo <Trophy size={18} />
-          </Link>
-        </article>
-
-        <article className="card">
-          <h2>Atalhos</h2>
-          <p className="muted">Acesse o calendário, a lista de pilotos e os detalhes de uma bateria confirmada.</p>
-          <div className="spacer small" />
-          <div className="grid">
-            <Link className="button" href="/calendario">
-              <CalendarDays size={18} /> Calendário
-            </Link>
-            <Link className="button secondary" href="/pilotos">
-              <Gauge size={18} /> Pilotos
-            </Link>
-            {season && nextBattery ? (
-              <Link className="button ghost" href={`/temporadas/${season.slug}/baterias/${batteryPathSlug(nextBattery.number)}`}>
-                {batteryStatusLabel(nextBattery.status)}
-              </Link>
-            ) : null}
+            <div style={{ color: "var(--text-primary)", fontSize: 15, fontWeight: 600, marginTop: 2 }}>
+              {nextBattery?.locationName ?? "Circuito Internacional Paladino"}
+            </div>
+            <div style={{ color: "var(--text-muted)", fontSize: 13 }}>
+              {nextBattery ? `${nextBattery.city}, ${nextBattery.uf}` : "Conde, PB"}
+            </div>
           </div>
-        </article>
-      </section>
+        </div>
+
+        <div style={{ color: "var(--text-muted)", fontSize: 12, marginBottom: 8 }}>Falta para o evento</div>
+        <div className="countdown-grid" style={{ marginBottom: 16 }}>
+          {["DIAS", "HORAS", "MIN", "SEG"].map((label) => (
+            <div className="countdown-cell" key={label}>
+              <strong>--</strong>
+              <span>{label}</span>
+            </div>
+          ))}
+        </div>
+
+        <VzButton href="/calendario">Ver calendário</VzButton>
+        <div style={{ marginTop: 12, textAlign: "center" }}>
+          <span style={{ alignItems: "center", display: "inline-flex", fontSize: 14, fontWeight: 600, gap: 6 }}>
+            Regulamento <ChevronRight size={16} strokeWidth={2.2} />
+          </span>
+        </div>
+      </VzCard>
+
+      <VzCard>
+        <div style={{ alignItems: "center", display: "flex", gap: 12, marginBottom: 6 }}>
+          <IconTile name="trophy" />
+          <h2 style={{ flex: 1, fontSize: 22, textTransform: "none" }}>Pódio atual</h2>
+          <span style={{ alignItems: "center", color: "var(--text-secondary)", display: "inline-flex", fontSize: 13, gap: 4 }}>
+            {season?.name ?? "Temporada"} <ChevronDown size={16} />
+          </span>
+        </div>
+
+        {podium.length ? (
+          <div>
+            {podium.map((pilot) => (
+              <RankRow
+                href={`/pilotos/${pilot.pilotSlug}`}
+                key={pilot.pilotId}
+                meta={`${pilot.uf} · bruto ${pilot.grossPoints} · descarte ${pilot.discardedPoints}`}
+                name={pilot.pilotName}
+                podium
+                points={pilot.finalPoints}
+                rank={pilot.rank}
+              />
+            ))}
+          </div>
+        ) : (
+          <p className="muted">Ranking ainda não iniciado.</p>
+        )}
+
+        <div style={{ marginTop: 12 }}>
+          <VzButton href="/ranking" variant="secondary">
+            Ver ranking completo <VzIcon name="chevron-right" size={16} />
+          </VzButton>
+        </div>
+      </VzCard>
+
+      <VzCard>
+        <div style={{ alignItems: "center", display: "flex", gap: 14 }}>
+          <IconTile name="gauge" size={52} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 15, fontWeight: 600 }}>Velocidade quase máxima</div>
+            <div style={{ alignItems: "baseline", display: "flex", gap: 6 }}>
+              <span style={{ fontFamily: "var(--font-mono)", fontSize: 30, fontWeight: 700 }}>{averageSpeed(season)}</span>
+              <span style={{ color: "var(--text-muted)", fontSize: 14 }}>km/h</span>
+            </div>
+            <div style={{ color: "var(--text-muted)", fontSize: 12 }}>Média da temporada até agora</div>
+          </div>
+          <div style={{ background: "var(--brand-red-soft)", borderRadius: "var(--radius-md)", flex: "none", padding: "8px 6px" }}>
+            <svg height="48" viewBox="0 0 96 48" width="96">
+              <path d="M4 36 L18 30 L32 33 L46 22 L60 27 L74 14 L92 18" fill="none" stroke="#E10600" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.4" />
+              <circle cx="92" cy="18" fill="#E10600" r="3.2" />
+            </svg>
+          </div>
+        </div>
+      </VzCard>
+
+      {season && nextBattery ? (
+        <VzButton href={`/temporadas/${season.slug}/baterias/${batteryPathSlug(nextBattery.number)}`} variant="ghost">
+          {nextBattery.label} · {formatDateTime(nextBattery.scheduledAt)}
+        </VzButton>
+      ) : null}
     </div>
   );
 }
