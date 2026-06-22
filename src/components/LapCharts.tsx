@@ -39,6 +39,26 @@ function deltaToSeconds(value: string | null | undefined) {
   return Number(value.replace(",", ".").replace("+", ""));
 }
 
+function formatLapTime(value: unknown) {
+  const seconds = Number(value);
+  if (!Number.isFinite(seconds)) return "--:--.--";
+
+  const totalCentiseconds = Math.max(0, Math.round(seconds * 100));
+  const minutes = Math.floor(totalCentiseconds / 6000);
+  const secondsPart = Math.floor((totalCentiseconds % 6000) / 100);
+  const centiseconds = totalCentiseconds % 100;
+
+  return `${minutes}:${String(secondsPart).padStart(2, "0")}.${String(centiseconds).padStart(2, "0")}`;
+}
+
+function formatDeltaTime(value: unknown) {
+  const seconds = Number(value);
+  if (!Number.isFinite(seconds)) return "0.00s";
+
+  const sign = seconds > 0 ? "+" : seconds < 0 ? "-" : "";
+  return `${sign}${Math.abs(seconds).toFixed(2)}s`;
+}
+
 export function LapCharts({ laps }: LapChartsProps) {
   const data = laps.map((lap, index) => {
     const seconds = timeToSeconds(lap.lapTime) ?? 0;
@@ -62,8 +82,8 @@ export function LapCharts({ laps }: LapChartsProps) {
           <LineChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: -18 }}>
             <CartesianGrid stroke="#e2e2e6" strokeDasharray="3 3" />
             <XAxis dataKey="lap" tickLine={false} axisLine={false} />
-            <YAxis tickLine={false} axisLine={false} domain={["dataMin - 1", "dataMax + 1"]} />
-            <Tooltip formatter={(value) => [`${value}s`, "Tempo"]} labelFormatter={(label) => `Volta ${label}`} />
+            <YAxis tickLine={false} axisLine={false} domain={["dataMin - 1", "dataMax + 1"]} tickFormatter={formatLapTime} width={56} />
+            <Tooltip formatter={(value) => [formatLapTime(value), "Tempo"]} labelFormatter={(label) => `Volta ${label}`} />
             <Line type="monotone" dataKey="tempo" stroke="#e10600" strokeWidth={2.5} dot={{ r: 3 }} />
           </LineChart>
         </ResponsiveContainer>
@@ -75,8 +95,8 @@ export function LapCharts({ laps }: LapChartsProps) {
           <BarChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: -18 }}>
             <CartesianGrid stroke="#e2e2e6" strokeDasharray="3 3" />
             <XAxis dataKey="lap" tickLine={false} axisLine={false} />
-            <YAxis tickLine={false} axisLine={false} />
-            <Tooltip formatter={(value) => [`${value}s`, "Variação"]} labelFormatter={(label) => `Volta ${label}`} />
+            <YAxis tickLine={false} axisLine={false} tickFormatter={formatDeltaTime} width={52} />
+            <Tooltip formatter={(value) => [formatDeltaTime(value), "Variação"]} labelFormatter={(label) => `Volta ${label}`} />
             <Bar dataKey="variacao" fill="#070707" radius={[6, 6, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
