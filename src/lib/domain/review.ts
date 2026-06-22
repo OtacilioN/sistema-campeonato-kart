@@ -1,5 +1,5 @@
 import { calculateFinalPoints, pointsForPosition } from "./scoring";
-import { normalizeName } from "./text";
+import { namesMatch, normalizeName, pilotSlug } from "./text";
 import type { ParsedOfficialReport, ReviewRow } from "./types";
 
 export type ReviewPayload = {
@@ -110,14 +110,27 @@ export function parseReviewRowsFromForm(formData: FormData): ReviewRow[] {
 }
 
 export function ensureUniqueReviewPilotNames(rows: Pick<ReviewRow, "fullName">[]) {
-  const seen = new Set<string>();
+  const seen: string[] = [];
 
   for (const row of rows) {
-    const key = normalizeName(row.fullName);
-    if (seen.has(key)) {
+    const normalizedName = normalizeName(row.fullName);
+    const slug = pilotSlug(row.fullName);
+
+    for (const previousName of seen) {
+      if (normalizeName(previousName) === normalizedName) {
+        throw new Error(`Piloto duplicado na bateria: ${row.fullName}`);
+      }
+
+      if (pilotSlug(previousName) === slug || namesMatch(previousName, row.fullName)) {
+        throw new Error(`Piloto duplicado na bateria: ${row.fullName} conflita com ${previousName}. Corrija um dos nomes antes de confirmar.`);
+      }
+    }
+
+    if (!normalizedName) {
       throw new Error(`Piloto duplicado na bateria: ${row.fullName}`);
     }
-    seen.add(key);
+
+    seen.push(row.fullName);
   }
 }
 

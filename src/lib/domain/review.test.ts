@@ -75,4 +75,12 @@ describe("review form parsing", () => {
 
     expect(() => ensureUniqueReviewPilotNames(rows)).toThrow("Piloto duplicado na bateria: Robério Rosa Barbalho");
   });
+
+  it("treats truncated and complete names that resolve to the same pilot as conflict", () => {
+    const rows = parseReviewRowsFromForm(reviewForm({ names: ["Jaime Antonio De Albuquerque...", "Jaime Antonio De Albuquerque"], poleIndex: "1" }));
+
+    expect(() => ensureUniqueReviewPilotNames(rows)).toThrow(
+      "Piloto duplicado na bateria: Jaime Antonio De Albuquerque conflita com Jaime Antonio De Albuquerque...",
+    );
+  });
 });

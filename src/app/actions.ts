@@ -8,6 +8,7 @@ import { ADMIN_COOKIE, isAdminCookieValid } from "@/lib/admin-auth";
 import { ensureUniqueReviewPilotNames, parseManualReviewRows, parseReviewRowsFromForm, reviewPayloadFromOfficialReport, type ReviewPayload } from "@/lib/domain/review";
 import { pilotSlug, preferredPilotName } from "@/lib/domain/text";
 import { parseBrazilianDateTime } from "@/lib/domain/time";
+import type { ReviewRow } from "@/lib/domain/types";
 import { prisma } from "@/lib/prisma";
 
 async function requireAdmin() {
@@ -164,72 +165,107 @@ export async function importOfficialPdfAction(formData: FormData) {
 export async function confirmReviewAction(formData: FormData) {
   await requireAdmin();
   const reviewId = required(formData.get("reviewId"), "revisao");
-  const rows = parseReviewRowsFromForm(formData);
   const review = await prisma.resultReview.findUnique({
     where: { id: reviewId },
     include: { battery: { include: { season: true } } },
   });
   if (!review) throw new Error("Revisão não encontrada.");
 
-  ensureUniqueReviewPilotNames(rows);
+  let rows: ReviewRow[];
+  try {
+    rows = parseReviewRowsFromForm(formData);
+    ensureUniqueReviewPilotNames(rows);
+  } catch (error) {
+    await rejectReviewConfirmation(reviewId, review.messages, readableErrorMessage(error));
+    redirect(`/admin/revisoes/${reviewId}`);
+  }
 
   const reviewPayload = review.reviewPayload as unknown as ReviewPayload;
 
-  await prisma.$transaction(async (tx) => {
-    await tx.batteryResult.deleteMany({ where: { batteryId: review.batteryId } });
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.batteryResult.deleteMany({ where: { batteryId: review.batteryId } });
 
-    for (const row of rows) {
-      const pilot = await upsertPilot(tx, row.fullName, row.uf);
-      await tx.batteryResult.create({
+      for (const row of rows) {
+        const pilot = await upsertPilot(tx, row.fullName, row.uf);
+        await tx.batteryResult.create({
+          data: {
+            batteryId: review.batteryId,
+            pilotId: pilot.id,
+            pilotNumber: row.pilotNumber,
+            position: row.position,
+            status: row.status,
+            bestLapNumber: row.bestLapNumber,
+            bestLapTime: row.bestLapTime,
+            totalTime: row.totalTime,
+            gapToLeader: row.gapToLeader,
+            gapToPrevious: row.gapToPrevious,
+            lastLapTime: row.lastLapTime,
+            totalLaps: row.totalLaps,
+            averageSpeed: row.averageSpeed ? row.averageSpeed.replace(",", ".") : null,
+            positionPoints: row.positionPoints,
+            poleBonus: row.poleBonus,
+            bestLapBonus: row.bestLapBonus,
+            penaltyPoints: row.penaltyPoints,
+            penaltyReason: row.penaltyReason,
+            finalPoints: row.finalPoints,
+          },
+        });
+      }
+
+      await tx.resultReview.update({
+        where: { id: reviewId },
         data: {
-          batteryId: review.batteryId,
-          pilotId: pilot.id,
-          pilotNumber: row.pilotNumber,
-          position: row.position,
-          status: row.status,
-          bestLapNumber: row.bestLapNumber,
-          bestLapTime: row.bestLapTime,
-          totalTime: row.totalTime,
-          gapToLeader: row.gapToLeader,
-          gapToPrevious: row.gapToPrevious,
-          lastLapTime: row.lastLapTime,
-          totalLaps: row.totalLaps,
-          averageSpeed: row.averageSpeed ? row.averageSpeed.replace(",", ".") : null,
-          positionPoints: row.positionPoints,
-          poleBonus: row.poleBonus,
-          bestLapBonus: row.bestLapBonus,
-          penaltyPoints: row.penaltyPoints,
-          penaltyReason: row.penaltyReason,
-          finalPoints: row.finalPoints,
+          status: "CONFIRMED",
+          confirmedAt: new Date(),
+          reviewPayload: { ...reviewPayload, rows } as unknown as Prisma.InputJsonValue,
+          messages: review.messages.filter((message) => !message.startsWith(CONFIRMATION_ERROR_PREFIX)),
         },
       });
+      await tx.battery.update({
+        where: { id: review.batteryId },
+        data: {
+          status: "CONFIRMED",
+          type: reviewPayload.type,
+          category: reviewPayload.category,
+          parsedPayload: (review.parsedPayload ?? review.reviewPayload) as Prisma.InputJsonValue,
+          scheduledAt: parseBrazilianDateTime(reviewPayload.occurredAtText) ?? review.battery.scheduledAt,
+        },
+      });
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      await rejectReviewConfirmation(reviewId, review.messages, "Dois resultados apontam para o mesmo piloto. Corrija os nomes antes de confirmar.");
+      redirect(`/admin/revisoes/${reviewId}`);
     }
 
-    await tx.resultReview.update({
-      where: { id: reviewId },
-      data: {
-        status: "CONFIRMED",
-        confirmedAt: new Date(),
-        reviewPayload: { ...reviewPayload, rows } as unknown as Prisma.InputJsonValue,
-      },
-    });
-    await tx.battery.update({
-      where: { id: review.batteryId },
-      data: {
-        status: "CONFIRMED",
-        type: reviewPayload.type,
-        category: reviewPayload.category,
-        parsedPayload: (review.parsedPayload ?? review.reviewPayload) as Prisma.InputJsonValue,
-        scheduledAt: parseBrazilianDateTime(reviewPayload.occurredAtText) ?? review.battery.scheduledAt,
-      },
-    });
-  });
+    throw error;
+  }
 
   revalidatePath("/");
   revalidatePath("/ranking");
   revalidatePath("/pilotos");
   revalidatePath("/admin");
   redirect("/admin");
+}
+
+const CONFIRMATION_ERROR_PREFIX = "Erro na confirmação:";
+
+async function rejectReviewConfirmation(reviewId: string, currentMessages: string[], message: string) {
+  await prisma.resultReview.update({
+    where: { id: reviewId },
+    data: {
+      messages: [
+        ...currentMessages.filter((currentMessage) => !currentMessage.startsWith(CONFIRMATION_ERROR_PREFIX)),
+        `${CONFIRMATION_ERROR_PREFIX} ${message}`,
+      ],
+    },
+  });
+  revalidatePath(`/admin/revisoes/${reviewId}`);
+}
+
+function readableErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Revise os dados antes de confirmar.";
 }
 
 export async function uploadLapToLapAction(formData: FormData) {
