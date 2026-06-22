@@ -1,4 +1,5 @@
 import { calculateFinalPoints, pointsForPosition } from "./scoring";
+import { normalizeName } from "./text";
 import type { ParsedOfficialReport, ReviewRow } from "./types";
 
 export type ReviewPayload = {
@@ -112,7 +113,7 @@ export function ensureUniqueReviewPilotNames(rows: Pick<ReviewRow, "fullName">[]
   const seen = new Set<string>();
 
   for (const row of rows) {
-    const key = row.fullName.toLowerCase();
+    const key = normalizeName(row.fullName);
     if (seen.has(key)) {
       throw new Error(`Piloto duplicado na bateria: ${row.fullName}`);
     }

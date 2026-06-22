@@ -69,4 +69,10 @@ describe("review form parsing", () => {
 
     expect(() => ensureUniqueReviewPilotNames(rows)).toThrow("Piloto duplicado na bateria: Ana Piloto");
   });
+
+  it("treats repeated normalized names as conflict", () => {
+    const rows = parseReviewRowsFromForm(reviewForm({ names: ["Roberio Rosa Barbalho", "Robério Rosa Barbalho"], poleIndex: "1" }));
+
+    expect(() => ensureUniqueReviewPilotNames(rows)).toThrow("Piloto duplicado na bateria: Robério Rosa Barbalho");
+  });
 });

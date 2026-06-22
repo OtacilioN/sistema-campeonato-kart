@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { parseLapToLap, parseOfficialReport, parseOfficialReportText, validateLapToLap } from "./pdf";
-import { namesMatch, pilotSlug } from "./text";
+import { namesMatch, pilotSlug, preferredPilotName } from "./text";
 
 describe("official report parser", () => {
   it("extracts the sample TimingOfficialReport.pdf", async () => {
@@ -80,5 +80,11 @@ describe("name normalization", () => {
 
   it("builds public pilot slugs", () => {
     expect(pilotSlug("Otacilio Saraiva Maia Neto")).toBe("otacilio-saraiva-maia-neto");
+    expect(pilotSlug("Robério Rosa Barbalho De Oli...")).toBe("roberio-rosa-barbalho-de-oli");
+  });
+
+  it("keeps the most complete pilot name", () => {
+    expect(preferredPilotName("Antonio Carlos De Carvalho Silva", "Antonio Carlos De Carvalho S...")).toBe("Antonio Carlos De Carvalho Silva");
+    expect(preferredPilotName("Roberio Rosa Barbalho De Oli...", "Robério Rosa Barbalho De Oli...")).toBe("Robério Rosa Barbalho De Oli...");
   });
 });

@@ -40,3 +40,23 @@ export function slugify(value: string) {
 export function pilotSlug(fullName: string) {
   return slugify(fullName);
 }
+
+export function hasTruncatedName(value: string) {
+  return normalizeName(value).includes("...");
+}
+
+export function preferredPilotName(currentName: string, incomingName: string) {
+  if (hasTruncatedName(currentName) && !hasTruncatedName(incomingName)) {
+    return incomingName;
+  }
+
+  if (!hasTruncatedName(currentName) && hasTruncatedName(incomingName)) {
+    return currentName;
+  }
+
+  if (normalizeName(currentName) === normalizeName(incomingName) && currentName !== incomingName) {
+    return incomingName;
+  }
+
+  return currentName;
+}

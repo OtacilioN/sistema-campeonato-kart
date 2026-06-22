@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { Prisma } from "@prisma/client";
 import { ADMIN_COOKIE, isAdminCookieValid } from "@/lib/admin-auth";
 import { ensureUniqueReviewPilotNames, parseManualReviewRows, parseReviewRowsFromForm, reviewPayloadFromOfficialReport, type ReviewPayload } from "@/lib/domain/review";
-import { pilotSlug } from "@/lib/domain/text";
+import { pilotSlug, preferredPilotName } from "@/lib/domain/text";
 import { parseBrazilianDateTime } from "@/lib/domain/time";
 import { prisma } from "@/lib/prisma";
 
@@ -296,15 +296,20 @@ export async function uploadLapToLapAction(formData: FormData) {
 }
 
 async function upsertPilot(tx: Prisma.TransactionClient, fullName: string, uf: string | null) {
-  const existing = await tx.pilot.findUnique({ where: { fullName } });
+  const slug = pilotSlug(fullName);
+  const existingByName = await tx.pilot.findUnique({ where: { fullName } });
+  const existing = existingByName ?? await tx.pilot.findUnique({ where: { slug } });
 
   if (existing) {
+    const nextFullName = preferredPilotName(existing.fullName, fullName);
+
     return tx.pilot.update({
       where: { id: existing.id },
       data: {
         active: true,
+        fullName: nextFullName,
         uf: existing.uf ?? uf,
-        slug: pilotSlug(fullName),
+        slug: pilotSlug(nextFullName),
       },
     });
   }
@@ -313,7 +318,7 @@ async function upsertPilot(tx: Prisma.TransactionClient, fullName: string, uf: s
     data: {
       fullName,
       uf,
-      slug: pilotSlug(fullName),
+      slug,
     },
   });
 }
