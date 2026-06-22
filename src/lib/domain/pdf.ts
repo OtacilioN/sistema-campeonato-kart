@@ -1,11 +1,12 @@
 import { readFile } from "node:fs/promises";
-import { PDFParse } from "pdf-parse";
 import { calculateFinalPoints, pointsForPosition } from "./scoring";
 import { namesMatch } from "./text";
 import type { LapValidationResult, ParsedLap, ParsedLapToLap, ParsedOfficialReport, ReviewRow } from "./types";
 
 async function extractText(input: Buffer | Uint8Array | File) {
   const data = input instanceof File ? Buffer.from(await input.arrayBuffer()) : input;
+  await ensurePdfNodePolyfills();
+  const { PDFParse } = await import("pdf-parse");
   const parser = new PDFParse({ data });
   try {
     const result = await parser.getText();
@@ -13,6 +14,14 @@ async function extractText(input: Buffer | Uint8Array | File) {
   } finally {
     await parser.destroy();
   }
+}
+
+async function ensurePdfNodePolyfills() {
+  const pdfGlobal = globalThis as unknown as Record<"DOMMatrix" | "ImageData" | "Path2D", unknown>;
+
+  pdfGlobal.DOMMatrix ??= class DOMMatrix {};
+  pdfGlobal.ImageData ??= class ImageData {};
+  pdfGlobal.Path2D ??= class Path2D {};
 }
 
 export async function extractTextFromPdfFile(path: string) {

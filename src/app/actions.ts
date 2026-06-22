@@ -5,7 +5,6 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { Prisma } from "@prisma/client";
 import { ADMIN_COOKIE, isAdminCookieValid } from "@/lib/admin-auth";
-import { parseLapToLap, parseOfficialReport, validateLapToLap } from "@/lib/domain/pdf";
 import { parseManualReviewRows, parseReviewRowsFromForm, reviewPayloadFromOfficialReport, type ReviewPayload } from "@/lib/domain/review";
 import { pilotSlug } from "@/lib/domain/text";
 import { parseBrazilianDateTime } from "@/lib/domain/time";
@@ -122,6 +121,7 @@ export async function importOfficialPdfAction(formData: FormData) {
     throw new Error("Selecione um PDF oficial.");
   }
 
+  const { parseOfficialReport } = await import("@/lib/domain/pdf");
   const parsed = await parseOfficialReport(Buffer.from(await file.arrayBuffer()));
   const payload = reviewPayloadFromOfficialReport(parsed);
   const review = await prisma.resultReview.create({
@@ -239,6 +239,7 @@ export async function uploadLapToLapAction(formData: FormData) {
   });
   if (!result) throw new Error("Resultado não encontrado.");
 
+  const { parseLapToLap, validateLapToLap } = await import("@/lib/domain/pdf");
   const parsed = await parseLapToLap(Buffer.from(await file.arrayBuffer()));
   const validation = validateLapToLap({
     parsed,
