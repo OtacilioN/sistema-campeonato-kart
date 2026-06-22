@@ -743,8 +743,7 @@ h3 {
   }
 
   .section-row,
-  .profile-strip,
-  .battery-videos-card .section-head {
+  .profile-strip {
     align-items: start;
     grid-template-columns: auto 1fr;
   }
@@ -760,8 +759,22 @@ h3 {
     width: 100%;
   }
 
+  .battery-videos-card .section-head {
+    align-items: start;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .video-upload-details {
+    min-width: 0;
+    width: 100%;
+  }
+
   .video-upload-form {
+    max-width: 100%;
+    min-width: 0;
     position: static;
+    width: 100%;
   }
 }
 
