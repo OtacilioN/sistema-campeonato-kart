@@ -581,6 +581,97 @@ h3 {
   gap: 12px;
 }
 
+.battery-videos-card {
+  display: grid;
+  gap: 14px;
+}
+
+.battery-videos-card .section-head {
+  align-items: center;
+}
+
+.video-upload-details {
+  min-width: 142px;
+  position: relative;
+}
+
+.video-upload-details summary {
+  list-style: none;
+}
+
+.video-upload-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.video-upload-form {
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-floating);
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+  min-width: min(320px, calc(100vw - 32px));
+  padding: 14px;
+  position: absolute;
+  right: 0;
+  z-index: 12;
+}
+
+.video-upload-form label {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.video-upload-message {
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+  padding: 10px 12px;
+}
+
+.video-upload-message.success {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.video-upload-message.error {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.battery-video-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.battery-video {
+  background: var(--surface-muted);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.battery-video iframe {
+  aspect-ratio: 16 / 9;
+  background: var(--racing-black);
+  border: 0;
+  display: block;
+  width: 100%;
+}
+
+.battery-video a {
+  align-items: center;
+  color: var(--text-primary);
+  display: flex;
+  font-size: 13px;
+  font-weight: 700;
+  justify-content: space-between;
+  padding: 10px 12px;
+}
+
 .chart-box {
   background: var(--surface-muted);
   border: 1px solid var(--border-light);
@@ -652,7 +743,8 @@ h3 {
   }
 
   .section-row,
-  .profile-strip {
+  .profile-strip,
+  .battery-videos-card .section-head {
     align-items: start;
     grid-template-columns: auto 1fr;
   }
@@ -660,6 +752,16 @@ h3 {
   .profile-points {
     grid-column: 1 / -1;
     justify-items: start;
+  }
+
+  .battery-videos-card .section-head-right {
+    grid-column: 1 / -1;
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .video-upload-form {
+    position: static;
   }
 }
 
@@ -1877,6 +1979,10 @@ h3 {
 
   .race-result-stats {
     grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .battery-video-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .admin-action-grid {

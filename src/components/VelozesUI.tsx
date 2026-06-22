@@ -6,6 +6,7 @@ import {
   Check,
   ChevronRight,
   CircleCheck,
+  CirclePlay,
   Clock,
   Crown,
   Download,
@@ -23,6 +24,7 @@ import {
   User,
   UserPlus,
   Users,
+  Video,
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -35,6 +37,7 @@ const icons: Record<string, LucideIcon> = {
   check: Check,
   "chevron-right": ChevronRight,
   "circle-check": CircleCheck,
+  "circle-play": CirclePlay,
   clock: Clock,
   crown: Crown,
   download: Download,
@@ -52,6 +55,7 @@ const icons: Record<string, LucideIcon> = {
   user: User,
   "user-plus": UserPlus,
   users: Users,
+  video: Video,
 };
 
 export function VzIcon({ name, size = 20, className }: { name: string; size?: number; className?: string }) {
@@ -62,11 +66,12 @@ export function VzIcon({ name, size = 20, className }: { name: string; size?: nu
 export function VzCard({
   children,
   className = "",
+  ...props
 }: {
   children: React.ReactNode;
   className?: string;
-}) {
-  return <section className={`vz-card ${className}`}>{children}</section>;
+} & React.ComponentPropsWithoutRef<"section">) {
+  return <section className={`vz-card ${className}`} {...props}>{children}</section>;
 }
 
 export function VzButton({

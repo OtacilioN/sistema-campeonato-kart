@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { uploadBatteryVideoAction } from "@/app/actions";
 import { LapCharts } from "@/components/LapCharts";
-import { CheckeredFlag, VzCard, VzIcon } from "@/components/VelozesUI";
+import { CheckeredFlag, SectionHead, VzButton, VzCard, VzIcon } from "@/components/VelozesUI";
 import { batteryStatusLabel, ordinal, resultStatusLabel } from "@/lib/domain/labels";
 import { formatDateTime } from "@/lib/domain/time";
+import { parseYouTubeVideoLink } from "@/lib/domain/youtube";
 import { getBatteryDetail } from "@/lib/data/public";
 
 export const dynamic = "force-dynamic";
@@ -13,12 +15,19 @@ type BatteryPageProps = {
     season: string;
     battery: string;
   }>;
+  searchParams?: Promise<{
+    video?: string;
+  }>;
 };
 
-export default async function BatteryPage({ params }: BatteryPageProps) {
+export default async function BatteryPage({ params, searchParams }: BatteryPageProps) {
   const { season: seasonSlug, battery: batterySlug } = await params;
+  const videoStatus = (await searchParams)?.video;
   const battery = await getBatteryDetail(seasonSlug, batterySlug);
   if (!battery) notFound();
+
+  const batteryPath = `/temporadas/${seasonSlug}/baterias/${batterySlug}`;
+  const canUploadVideo = Boolean(process.env.VIDEOMAKER_PASSWORD);
 
   return (
     <div className="vz-page tight battery-page">
@@ -70,6 +79,64 @@ export default async function BatteryPage({ params }: BatteryPageProps) {
         </VzCard>
       ) : null}
 
+      <VzCard className="battery-videos-card" id="videos">
+        <SectionHead
+          icon="circle-play"
+          sub="Links do YouTube enviados pelos videomakers da bateria."
+          title="Vídeos da corrida"
+          right={canUploadVideo ? (
+            <details className="video-upload-details">
+              <summary className="vz-button secondary">
+                <VzIcon name="upload-cloud" size={17} />
+                Subir vídeo
+              </summary>
+              <form className="video-upload-form" action={uploadBatteryVideoAction}>
+                <input type="hidden" name="batteryId" value={battery.id} />
+                <input type="hidden" name="returnTo" value={batteryPath} />
+                <label htmlFor="youtubeUrl">Link do YouTube</label>
+                <input className="input" id="youtubeUrl" name="youtubeUrl" placeholder="https://youtu.be/..." required type="url" />
+                <label htmlFor="videomakerPassword">Senha de videomaker</label>
+                <input className="input" id="videomakerPassword" name="password" required type="password" />
+                <VzButton type="submit">
+                  <VzIcon name="video" size={17} />
+                  Publicar vídeo
+                </VzButton>
+              </form>
+            </details>
+          ) : null}
+        />
+
+        {videoStatus ? <p className={`video-upload-message ${videoStatus === "enviado" ? "success" : "error"}`}>{videoStatusLabel(videoStatus)}</p> : null}
+
+        {battery.videos.length ? (
+          <div className="battery-video-grid">
+            {battery.videos.map((video, index) => {
+              const parsedVideo = parseYouTubeVideoLink(video.youtubeUrl);
+              if (!parsedVideo) return null;
+
+              return (
+                <article className="battery-video" key={video.id}>
+                  <iframe
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    src={parsedVideo.embedUrl}
+                    title={`${battery.label} - vídeo ${index + 1}`}
+                  />
+                  <a href={video.youtubeUrl} rel="noreferrer" target="_blank">
+                    Abrir no YouTube
+                    <VzIcon name="chevron-right" size={16} />
+                  </a>
+                </article>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="muted">Nenhum vídeo enviado para esta bateria ainda.</p>
+        )}
+      </VzCard>
+
       {battery.status === "CONFIRMED" ? (
         <div className="battery-results-list" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {battery.results.map((result) => (
@@ -111,4 +178,15 @@ export default async function BatteryPage({ params }: BatteryPageProps) {
       ) : null}
     </div>
   );
+}
+
+function videoStatusLabel(status: string) {
+  const labels: Record<string, string> = {
+    enviado: "Vídeo publicado na página da bateria.",
+    senha: "Senha de videomaker inválida.",
+    link: "Envie apenas links de vídeos hospedados no YouTube.",
+    erro: "Não foi possível publicar o vídeo. Revise os dados e tente novamente.",
+  };
+
+  return labels[status] ?? labels.erro;
 }

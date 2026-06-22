@@ -99,6 +99,9 @@ export async function getBatteryDetail(seasonSlug: string, batterySlug: string) 
         },
         orderBy: [{ position: "asc" }, { createdAt: "asc" }],
       },
+      videos: {
+        orderBy: { createdAt: "asc" },
+      },
     },
   });
 }

@@ -55,8 +55,22 @@ model Battery {
   season        Season          @relation(fields: [seasonId], references: [id], onDelete: Cascade)
   results       BatteryResult[]
   reviews       ResultReview[]
+  videos        BatteryVideo[]
 
   @@unique([seasonId, number])
+}
+
+model BatteryVideo {
+  id             String   @id @default(cuid())
+  batteryId      String
+  youtubeVideoId String
+  youtubeUrl     String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  battery        Battery  @relation(fields: [batteryId], references: [id], onDelete: Cascade)
+
+  @@unique([batteryId, youtubeVideoId])
+  @@index([batteryId])
 }
 
 model BatteryResult {

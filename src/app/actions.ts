@@ -9,6 +9,7 @@ import { ensureUniqueReviewPilotNames, parseManualReviewRows, parseReviewRowsFro
 import { pilotSlug, preferredPilotName } from "@/lib/domain/text";
 import { parseBrazilianDateTime } from "@/lib/domain/time";
 import type { ReviewRow } from "@/lib/domain/types";
+import { parseYouTubeVideoLink } from "@/lib/domain/youtube";
 import { prisma } from "@/lib/prisma";
 
 async function requireAdmin() {
@@ -418,6 +419,62 @@ export async function uploadLapToLapAction(formData: FormData) {
 
   revalidatePath(returnTo);
   redirect(returnTo);
+}
+
+export async function uploadBatteryVideoAction(formData: FormData) {
+  const batteryId = required(formData.get("batteryId"), "bateria");
+  const returnTo = safeReturnPath(String(formData.get("returnTo") ?? "/"));
+  const password = String(formData.get("password") ?? "");
+
+  if (!isVideomakerPasswordValid(password)) {
+    redirect(videoRedirectPath(returnTo, "senha"));
+  }
+
+  const parsedLink = parseYouTubeVideoLink(String(formData.get("youtubeUrl") ?? ""));
+  if (!parsedLink) {
+    redirect(videoRedirectPath(returnTo, "link"));
+  }
+
+  const battery = await prisma.battery.findUnique({
+    where: { id: batteryId },
+    select: { id: true },
+  });
+  if (!battery) {
+    redirect(videoRedirectPath(returnTo, "erro"));
+  }
+
+  await prisma.batteryVideo.upsert({
+    where: {
+      batteryId_youtubeVideoId: {
+        batteryId,
+        youtubeVideoId: parsedLink.videoId,
+      },
+    },
+    update: {
+      youtubeUrl: parsedLink.canonicalUrl,
+    },
+    create: {
+      batteryId,
+      youtubeVideoId: parsedLink.videoId,
+      youtubeUrl: parsedLink.canonicalUrl,
+    },
+  });
+
+  revalidatePath(returnTo);
+  redirect(videoRedirectPath(returnTo, "enviado"));
+}
+
+function isVideomakerPasswordValid(password: string) {
+  const expected = process.env.VIDEOMAKER_PASSWORD;
+  return Boolean(expected) && password === expected;
+}
+
+function safeReturnPath(path: string) {
+  return path.startsWith("/") && !path.startsWith("//") ? path.split(/[?#]/)[0] || "/" : "/";
+}
+
+function videoRedirectPath(path: string, status: string) {
+  return `${path}?video=${status}#videos`;
 }
 
 async function upsertPilot(tx: Prisma.TransactionClient, fullName: string, uf: string | null) {
