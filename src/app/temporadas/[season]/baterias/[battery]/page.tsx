@@ -1,10 +1,8 @@
-import { Upload } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { uploadLapToLapAction } from "@/app/actions";
 import { LapCharts } from "@/components/LapCharts";
-import { Avatar, CheckeredFlag, VzButton, VzCard, VzIcon } from "@/components/VelozesUI";
-import { batteryPathSlug, batteryStatusLabel, ordinal, resultStatusLabel } from "@/lib/domain/labels";
+import { Avatar, CheckeredFlag, VzCard, VzIcon } from "@/components/VelozesUI";
+import { batteryStatusLabel, ordinal, resultStatusLabel } from "@/lib/domain/labels";
 import { formatDateTime } from "@/lib/domain/time";
 import { getBatteryDetail } from "@/lib/data/public";
 
@@ -21,8 +19,6 @@ export default async function BatteryPage({ params }: BatteryPageProps) {
   const { season: seasonSlug, battery: batterySlug } = await params;
   const battery = await getBatteryDetail(seasonSlug, batterySlug);
   if (!battery) notFound();
-
-  const returnTo = `/temporadas/${battery.season.slug}/baterias/${batteryPathSlug(battery.number)}`;
 
   return (
     <div className="vz-page tight battery-page">
@@ -109,14 +105,7 @@ export default async function BatteryPage({ params }: BatteryPageProps) {
                   <h2 style={{ fontSize: 20, textTransform: "none" }}>Volta por volta</h2>
                   <LapCharts laps={result.lapToLap.laps} />
                 </div>
-              ) : (
-                <form action={uploadLapToLapAction} className="upload-form" encType="multipart/form-data">
-                  <input name="resultId" type="hidden" value={result.id} />
-                  <input name="returnTo" type="hidden" value={returnTo} />
-                  <input accept="application/pdf" className="input file" name="file" required type="file" />
-                  <VzButton type="submit" variant="dark"><Upload size={18} /> Enviar lap-to-lap</VzButton>
-                </form>
-              )}
+              ) : null}
             </VzCard>
           ))}
         </div>

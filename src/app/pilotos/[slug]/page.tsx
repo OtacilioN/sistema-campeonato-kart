@@ -1,9 +1,9 @@
-import { Upload } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { uploadLapToLapAction } from "@/app/actions";
+import { AutoFileUploadForm } from "@/components/AutoFileUploadForm";
 import { LapCharts } from "@/components/LapCharts";
-import { Avatar, DateBlock, VzButton, VzCard, VzIcon } from "@/components/VelozesUI";
+import { Avatar, DateBlock, VzCard, VzIcon } from "@/components/VelozesUI";
 import { batteryPathSlug, ordinal, resultStatusLabel } from "@/lib/domain/labels";
 import { getPilotProfile, getPublicRanking } from "@/lib/data/public";
 
@@ -125,12 +125,17 @@ export default async function PilotPage({ params }: PilotPageProps) {
                       <LapCharts laps={result.lapToLap.laps} />
                     </div>
                   ) : (
-                    <form action={uploadLapToLapAction} className="upload-form" encType="multipart/form-data">
-                      <input name="resultId" type="hidden" value={result.id} />
-                      <input name="returnTo" type="hidden" value={`/pilotos/${pilot.slug}`} />
-                      <input accept="application/pdf" className="input file" name="file" required type="file" />
-                      <VzButton type="submit" variant="dark"><Upload size={18} /> Enviar lap-to-lap</VzButton>
-                    </form>
+                    <AutoFileUploadForm
+                      action={uploadLapToLapAction}
+                      buttonLabel="Enviar lap-to-lap"
+                      className="upload-form"
+                      hiddenFields={[
+                        { name: "resultId", value: result.id },
+                        { name: "returnTo", value: `/pilotos/${pilot.slug}` },
+                      ]}
+                      pendingLabel="Enviando lap-to-lap..."
+                      variant="dark"
+                    />
                   )}
                 </article>
               );
@@ -141,10 +146,6 @@ export default async function PilotPage({ params }: PilotPageProps) {
         )}
       </VzCard>
 
-      <VzButton variant="secondary">
-        <VzIcon name="bar-chart-3" size={18} />
-        Ver análise da temporada
-      </VzButton>
     </div>
   );
 }

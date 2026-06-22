@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { confirmReviewAction } from "@/app/actions";
 import { PageHeader } from "@/components/PageHeader";
+import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { ADMIN_COOKIE, isAdminCookieValid } from "@/lib/admin-auth";
 import { reviewStatusLabel } from "@/lib/domain/labels";
 import type { ReviewPayload } from "@/lib/domain/review";
@@ -121,9 +122,9 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
 
           {rows.length === 0 ? <p className="muted">Nenhum piloto encontrado nesta revisão.</p> : null}
 
-          <button className="button" type="submit" disabled={review.status === "CONFIRMED" || rows.length === 0}>
+          <PendingSubmitButton className="button" disabled={review.status === "CONFIRMED" || rows.length === 0} pendingLabel="Confirmando resultado...">
             Confirmar resultado e recalcular ranking
-          </button>
+          </PendingSubmitButton>
         </form>
       </section>
     </div>

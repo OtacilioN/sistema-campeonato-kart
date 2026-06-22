@@ -1,7 +1,5 @@
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { IconTile, RankRow, VzButton, VzCard, VzIcon } from "@/components/VelozesUI";
-import { batteryPathSlug } from "@/lib/domain/labels";
-import { formatDateTime } from "@/lib/domain/time";
 import { getActiveSeason, getPublicRanking } from "@/lib/data/public";
 
 export const dynamic = "force-dynamic";
@@ -25,7 +23,7 @@ function averageSpeed(season: Awaited<ReturnType<typeof getActiveSeason>>) {
 export default async function Home() {
   const [season, rankingData] = await Promise.all([getActiveSeason(), getPublicRanking()]);
   const nextBattery = season?.batteries.find((battery) => battery.status !== "CANCELED");
-  const podium = rankingData.ranking.slice(0, 3);
+  const podium = rankingData.ranking.slice(0, 5);
 
   return (
     <div className="vz-page home-page">
@@ -84,6 +82,7 @@ export default async function Home() {
                 podium
                 points={pilot.finalPoints}
                 rank={pilot.rank}
+                showAvatar={false}
               />
             ))}
           </div>
@@ -118,11 +117,6 @@ export default async function Home() {
         </div>
       </VzCard>
 
-      {season && nextBattery ? (
-        <VzButton href={`/temporadas/${season.slug}/baterias/${batteryPathSlug(nextBattery.number)}`} variant="ghost">
-          {nextBattery.label} · {formatDateTime(nextBattery.scheduledAt)}
-        </VzButton>
-      ) : null}
     </div>
   );
 }

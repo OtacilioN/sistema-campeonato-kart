@@ -10,6 +10,7 @@ import {
   createSeasonAction,
   importOfficialPdfAction,
 } from "@/app/actions";
+import { AutoFileUploadForm } from "@/components/AutoFileUploadForm";
 import { IconTile, SectionHead, VzBadge, VzButton, VzCard, VzIcon } from "@/components/VelozesUI";
 import { ADMIN_COOKIE, isAdminCookieValid } from "@/lib/admin-auth";
 import { batteryStatusLabel, reviewSourceLabel, reviewStatusLabel } from "@/lib/domain/labels";
@@ -116,11 +117,12 @@ export default async function AdminPage() {
                     <p className="meta">{battery.results.length} resultados confirmados · {battery.reviews.length} revisões</p>
                   </div>
                   <div className="admin-actions">
-                    <form action={importOfficialPdfAction} className="compact-upload" encType="multipart/form-data">
-                      <input type="hidden" name="batteryId" value={battery.id} />
-                      <input className="input file" name="file" type="file" accept="application/pdf" required />
-                      <VzButton type="submit"><VzIcon name="upload-cloud" size={18} /> Importar PDF</VzButton>
-                    </form>
+                    <AutoFileUploadForm
+                      action={importOfficialPdfAction}
+                      buttonLabel="Importar PDF"
+                      hiddenFields={[{ name: "batteryId", value: battery.id }]}
+                      pendingLabel="Importando PDF..."
+                    />
                     <details>
                       <summary className="vz-button secondary">Inserção manual</summary>
                       <form className="manual-form" action={createManualReviewAction}>

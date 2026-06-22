@@ -107,11 +107,21 @@ export function VzBadge({
 export function VzChip({
   children,
   active = false,
+  href,
 }: {
   children: React.ReactNode;
   active?: boolean;
+  href?: string;
 }) {
-  return <span className={`vz-chip ${active ? "active" : ""}`}>{children}</span>;
+  const className = `vz-chip ${active ? "active" : ""}`;
+  if (href) {
+    return (
+      <Link aria-current={active ? "page" : undefined} className={className} href={href}>
+        {children}
+      </Link>
+    );
+  }
+  return <span className={className}>{children}</span>;
 }
 
 export function IconTile({
@@ -168,6 +178,7 @@ export function RankRow({
   points,
   href,
   podium = false,
+  showAvatar = true,
 }: {
   rank: number;
   name: string;
@@ -175,11 +186,12 @@ export function RankRow({
   points: number;
   href?: string;
   podium?: boolean;
+  showAvatar?: boolean;
 }) {
   const content = (
     <>
       <span className={`rank-pos ${podium && rank <= 3 ? `top-${rank}` : ""}`}>{rank}</span>
-      <Avatar />
+      {showAvatar ? <Avatar /> : null}
       <span className="rank-driver">
         <strong>{name}</strong>
         {meta ? <small>{meta}</small> : null}
