@@ -26,7 +26,7 @@ export default async function CalendarioPage({ searchParams }: CalendarioPagePro
   const batteries = season?.batteries ?? [];
   const upcoming = batteries.filter((battery) => battery.status !== "CONFIRMED" && battery.status !== "CANCELED");
   const confirmed = batteries.filter((battery) => battery.status === "CONFIRMED");
-  const nextId = upcoming[0]?.id ?? batteries.find((battery) => battery.status !== "CANCELED")?.id;
+  const nextId = upcoming[0]?.id ?? null;
   const selectedPeriod = query?.periodo === "anteriores" ? "anteriores" : "proximos";
   const visibleBatteries = selectedPeriod === "anteriores" ? confirmed : upcoming;
 
@@ -51,11 +51,11 @@ export default async function CalendarioPage({ searchParams }: CalendarioPagePro
 
             return (
               <Link href={href} key={battery.id}>
-                <VzCard className={battery.id === nextId ? "next-event-card" : ""}>
+                <VzCard className={selectedPeriod === "proximos" && battery.id === nextId ? "next-event-card" : ""}>
                   <div className="event-card">
                     <DateBlock day={date.day} dow={date.dow} mon={date.mon} />
                     <div className="event-body">
-                      {battery.id === nextId ? (
+                      {selectedPeriod === "proximos" && battery.id === nextId ? (
                         <div style={{ marginBottom: 6 }}>
                           <VzBadge icon="star" tone="brand">Próximo evento</VzBadge>
                         </div>
