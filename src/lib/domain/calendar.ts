@@ -1,4 +1,4 @@
-const DEFAULT_EVENT_DURATION_MINUTES = 120;
+const DEFAULT_EVENT_DURATION_MINUTES = 60;
 const EVENT_TIME_ZONE = "America/Fortaleza";
 
 type CalendarBattery = {
@@ -13,17 +13,14 @@ type CalendarBattery = {
 };
 
 function googleDate(value: Date) {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    day: "2-digit",
-    hour: "2-digit",
-    hour12: false,
-    minute: "2-digit",
-    month: "2-digit",
-    second: "2-digit",
-    timeZone: EVENT_TIME_ZONE,
-    year: "numeric",
-  }).formatToParts(value);
-  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  const values = {
+    day: String(value.getUTCDate()).padStart(2, "0"),
+    hour: String(value.getUTCHours()).padStart(2, "0"),
+    minute: String(value.getUTCMinutes()).padStart(2, "0"),
+    month: String(value.getUTCMonth() + 1).padStart(2, "0"),
+    second: String(value.getUTCSeconds()).padStart(2, "0"),
+    year: String(value.getUTCFullYear()),
+  };
 
   return `${values.year}${values.month}${values.day}T${values.hour}${values.minute}${values.second}`;
 }
