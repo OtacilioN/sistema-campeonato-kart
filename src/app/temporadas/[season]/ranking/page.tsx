@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { SectionHead, VzCard, VzChip, VzIcon } from "@/components/VelozesUI";
+import { SectionHead, VzButton, VzCard, VzChip, VzIcon } from "@/components/VelozesUI";
 import { getPublicRanking } from "@/lib/data/public";
 import type { RankingRow } from "@/lib/domain/types";
 
@@ -43,7 +43,17 @@ export default async function RankingSeasonPage({ params, searchParams }: Rankin
 
   return (
     <div className="vz-page tight ranking-page">
-      <SectionHead icon="trophy" sub="Ranking compartilhável desta temporada." title={season.name} />
+      <SectionHead
+        icon="trophy"
+        right={(
+          <VzButton className="section-action-button" href="/temporadas" variant="secondary">
+            Temporadas
+            <VzIcon name="calendar-clock" size={16} />
+          </VzButton>
+        )}
+        sub="Ranking compartilhável desta temporada."
+        title={season.name}
+      />
       <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 2 }}>
         {confirmedBatteries.map((battery) => (
           <VzChip active={selectedBatteryNumber === battery.number} href={`/temporadas/${season.slug}/ranking?bateria=${battery.number}`} key={battery.id}>

@@ -1,5 +1,5 @@
 import { POSITION_POINTS } from "@/lib/domain/scoring";
-import { SectionHead, VzBadge, VzCard, VzChip, VzIcon } from "@/components/VelozesUI";
+import { SectionHead, VzBadge, VzButton, VzCard, VzChip, VzIcon } from "@/components/VelozesUI";
 import { getPublicRanking } from "@/lib/data/public";
 import type { RankingRow } from "@/lib/domain/types";
 
@@ -40,6 +40,12 @@ export default async function RankingPage({ searchParams }: RankingPageProps) {
     <div className="vz-page tight ranking-page">
       <SectionHead
         icon="trophy"
+        right={(
+          <VzButton className="section-action-button" href="/temporadas" variant="secondary">
+            Temporadas passadas
+            <VzIcon name="calendar-clock" size={16} />
+          </VzButton>
+        )}
         sub="Acompanhe o desempenho dos pilotos na temporada."
         title={season?.name ?? "Temporada ativa"}
       />

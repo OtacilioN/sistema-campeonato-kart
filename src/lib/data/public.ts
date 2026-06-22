@@ -42,6 +42,29 @@ export async function getSeasonBySlug(slug: string) {
   });
 }
 
+export async function getPublicSeasons() {
+  return prisma.season.findMany({
+    orderBy: [{ year: "desc" }, { period: "desc" }],
+    include: {
+      batteries: {
+        orderBy: { number: "asc" },
+        include: {
+          results: {
+            where: {
+              battery: {
+                status: "CONFIRMED",
+              },
+            },
+            select: {
+              pilotId: true,
+            },
+          },
+        },
+      },
+    },
+  });
+}
+
 export async function getPublicRanking(seasonSlug?: string) {
   const season = seasonSlug ? await getSeasonBySlug(seasonSlug) : await getActiveSeason();
   if (!season) return { season: null, ranking: [] as RankingRow[] };

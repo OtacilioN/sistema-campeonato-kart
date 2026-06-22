@@ -1202,7 +1202,13 @@ h3 {
 .section-head {
   align-items: flex-start;
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
+}
+
+.section-head > div:not(.section-head-right) {
+  flex: 1;
+  min-width: 0;
 }
 
 .section-head h2 {
@@ -1225,6 +1231,12 @@ h3 {
 
 .section-head-right {
   margin-left: auto;
+}
+
+.section-action-button {
+  height: 40px;
+  padding: 0 14px;
+  width: auto;
 }
 
 .rank-row {
@@ -1480,6 +1492,42 @@ h3 {
 
 .ranking-card {
   padding: 4px 16px;
+}
+
+.season-list {
+  display: grid;
+  gap: var(--gap-card);
+}
+
+.season-card {
+  display: grid;
+  gap: 14px;
+}
+
+.season-card-head {
+  align-items: flex-start;
+}
+
+.season-card-head h2 {
+  font-size: 24px;
+  text-transform: none;
+}
+
+.season-stat-grid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.season-battery-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.season-battery-list .vz-chip {
+  height: 36px;
+  padding: 0 13px;
 }
 
 .ranking-header {
