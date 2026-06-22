@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { uploadBatteryVideoAction } from "@/app/actions";
+import { deleteBatteryVideoAction, uploadBatteryVideoAction } from "@/app/actions";
 import { LapCharts } from "@/components/LapCharts";
 import { CheckeredFlag, SectionHead, VzButton, VzCard, VzIcon } from "@/components/VelozesUI";
 import { batteryStatusLabel, ordinal, resultStatusLabel } from "@/lib/domain/labels";
@@ -106,7 +106,7 @@ export default async function BatteryPage({ params, searchParams }: BatteryPageP
           ) : null}
         />
 
-        {videoStatus ? <p className={`video-upload-message ${videoStatus === "enviado" ? "success" : "error"}`}>{videoStatusLabel(videoStatus)}</p> : null}
+        {videoStatus ? <p className={`video-upload-message ${["enviado", "excluido"].includes(videoStatus) ? "success" : "error"}`}>{videoStatusLabel(videoStatus)}</p> : null}
 
         {battery.videos.length ? (
           <div className="battery-video-grid">
@@ -124,10 +124,30 @@ export default async function BatteryPage({ params, searchParams }: BatteryPageP
                     src={parsedVideo.embedUrl}
                     title={`${battery.label} - vídeo ${index + 1}`}
                   />
-                  <a href={video.youtubeUrl} rel="noreferrer" target="_blank">
-                    Abrir no YouTube
-                    <VzIcon name="chevron-right" size={16} />
-                  </a>
+                  <div className="battery-video-actions">
+                    <a href={video.youtubeUrl} rel="noreferrer" target="_blank">
+                      Abrir no YouTube
+                      <VzIcon name="chevron-right" size={16} />
+                    </a>
+                    {canUploadVideo ? (
+                      <details className="video-delete-details">
+                        <summary className="video-delete-summary">
+                          <VzIcon name="trash" size={14} />
+                          Excluir
+                        </summary>
+                        <form className="video-delete-form" action={deleteBatteryVideoAction}>
+                          <input type="hidden" name="videoId" value={video.id} />
+                          <input type="hidden" name="returnTo" value={batteryPath} />
+                          <label htmlFor={`deletePassword-${video.id}`}>Senha de videomaker</label>
+                          <input className="input" id={`deletePassword-${video.id}`} name="password" required type="password" />
+                          <VzButton type="submit" variant="danger">
+                            <VzIcon name="trash" size={16} />
+                            Confirmar exclusão
+                          </VzButton>
+                        </form>
+                      </details>
+                    ) : null}
+                  </div>
                 </article>
               );
             })}
@@ -183,6 +203,7 @@ export default async function BatteryPage({ params, searchParams }: BatteryPageP
 function videoStatusLabel(status: string) {
   const labels: Record<string, string> = {
     enviado: "Vídeo publicado na página da bateria.",
+    excluido: "Vídeo excluído da página da bateria.",
     senha: "Senha de videomaker inválida.",
     link: "Envie apenas links de vídeos hospedados no YouTube.",
     erro: "Não foi possível publicar o vídeo. Revise os dados e tente novamente.",

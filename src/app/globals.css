@@ -662,7 +662,14 @@ h3 {
   width: 100%;
 }
 
-.battery-video a {
+.battery-video-actions {
+  background: var(--surface);
+  border-top: 1px solid var(--border-light);
+  display: grid;
+  gap: 0;
+}
+
+.battery-video-actions > a {
   align-items: center;
   color: var(--text-primary);
   display: flex;
@@ -670,6 +677,43 @@ h3 {
   font-weight: 700;
   justify-content: space-between;
   padding: 10px 12px;
+}
+
+.video-delete-details {
+  border-top: 1px solid var(--border-light);
+}
+
+.video-delete-summary {
+  align-items: center;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 700;
+  gap: 6px;
+  list-style: none;
+  padding: 10px 12px;
+}
+
+.video-delete-summary::-webkit-details-marker {
+  display: none;
+}
+
+.video-delete-summary:hover {
+  color: var(--danger);
+}
+
+.video-delete-form {
+  border-top: 1px solid var(--border-light);
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+}
+
+.video-delete-form label {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .chart-box {

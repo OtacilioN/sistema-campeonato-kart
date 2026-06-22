@@ -464,6 +464,27 @@ export async function uploadBatteryVideoAction(formData: FormData) {
   redirect(videoRedirectPath(returnTo, "enviado"));
 }
 
+export async function deleteBatteryVideoAction(formData: FormData) {
+  const videoId = required(formData.get("videoId"), "video");
+  const returnTo = safeReturnPath(String(formData.get("returnTo") ?? "/"));
+  const password = String(formData.get("password") ?? "");
+
+  if (!isVideomakerPasswordValid(password)) {
+    redirect(videoRedirectPath(returnTo, "senha"));
+  }
+
+  const deleted = await prisma.batteryVideo.deleteMany({
+    where: { id: videoId },
+  });
+
+  if (deleted.count === 0) {
+    redirect(videoRedirectPath(returnTo, "erro"));
+  }
+
+  revalidatePath(returnTo);
+  redirect(videoRedirectPath(returnTo, "excluido"));
+}
+
 function isVideomakerPasswordValid(password: string) {
   const expected = process.env.VIDEOMAKER_PASSWORD;
   return Boolean(expected) && password === expected;
