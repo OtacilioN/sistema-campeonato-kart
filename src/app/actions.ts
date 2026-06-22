@@ -29,8 +29,13 @@ export async function createSeasonAction(formData: FormData) {
   const period = Number(required(formData.get("period"), "periodo"));
   const slug = `${year}-${period}`;
 
-  await prisma.season.create({
-    data: {
+  await prisma.season.upsert({
+    where: { year_period: { year, period } },
+    update: {
+      slug,
+      name: `Temporada ${year}.${period}`,
+    },
+    create: {
       year,
       period,
       slug,
@@ -60,14 +65,21 @@ export async function createBatteryAction(formData: FormData) {
   const number = Number(required(formData.get("number"), "numero"));
   const monthLabel = String(formData.get("monthLabel") ?? "").trim() || null;
   const scheduledAtValue = String(formData.get("scheduledAt") ?? "").trim();
+  const scheduledAt = scheduledAtValue ? new Date(scheduledAtValue) : null;
 
-  await prisma.battery.create({
-    data: {
+  await prisma.battery.upsert({
+    where: { seasonId_number: { seasonId, number } },
+    update: {
+      label: `${number}ª Bateria`,
+      monthLabel,
+      scheduledAt,
+    },
+    create: {
       seasonId,
       number,
       label: `${number}ª Bateria`,
       monthLabel,
-      scheduledAt: scheduledAtValue ? new Date(scheduledAtValue) : null,
+      scheduledAt,
     },
   });
 
