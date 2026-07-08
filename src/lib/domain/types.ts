@@ -22,6 +22,8 @@ export type RankingEntry = BatteryResultInput & {
 
 export type RankingRow = {
   rank: number;
+  simulatedRank: number;
+  realRank: number | null;
   pilotId: string;
   pilotName: string;
   pilotSlug: string;
@@ -30,6 +32,9 @@ export type RankingRow = {
   discardedPoints: number;
   finalPoints: number;
   wins: number;
+  participations: number;
+  rankingStatus: "COMPETING" | "NOT_COMPETING" | "DISQUALIFIED";
+  rankingStatusLabel: string | null;
   entries: RankingEntry[];
 };
 

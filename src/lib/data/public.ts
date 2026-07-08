@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { buildRanking } from "@/lib/domain/scoring";
+import { seasonRegulationFor } from "@/lib/domain/season-regulations";
 import type { BatteryResultInput, RankingRow } from "@/lib/domain/types";
 
 export async function getActiveSeason() {
@@ -17,6 +18,10 @@ export async function getActiveSeason() {
             orderBy: [{ position: "asc" }, { createdAt: "asc" }],
           },
         },
+      },
+      disqualifications: {
+        where: { revokedAt: null },
+        include: { pilot: true },
       },
     },
   });
@@ -37,6 +42,10 @@ export async function getSeasonBySlug(slug: string) {
             orderBy: [{ position: "asc" }, { createdAt: "asc" }],
           },
         },
+      },
+      disqualifications: {
+        where: { revokedAt: null },
+        include: { pilot: true },
       },
     },
   });
@@ -89,7 +98,13 @@ export async function getPublicRanking(seasonSlug?: string) {
     })),
   );
 
-  return { season, ranking: buildRanking(results, confirmedNumbers) };
+  return {
+    season,
+    ranking: buildRanking(results, confirmedNumbers, {
+      regulation: seasonRegulationFor(season),
+      disqualifiedPilotIds: new Set(season.disqualifications.map((disqualification) => disqualification.pilotId)),
+    }),
+  };
 }
 
 export async function getPilotProfile(slug: string) {

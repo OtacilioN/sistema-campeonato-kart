@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildRanking, calculateFinalPoints, pointsForPosition } from "./scoring";
+import { seasonRegulationFor } from "./season-regulations";
 import type { BatteryResultInput } from "./types";
 
 function result(input: Partial<BatteryResultInput> & Pick<BatteryResultInput, "pilotId" | "pilotName" | "batteryNumber" | "finalPoints">): BatteryResultInput {
@@ -77,5 +78,75 @@ describe("ranking", () => {
     expect(ranking[0].pilotName).toBe("Bruno");
     expect(ranking[0].finalPoints).toBe(22);
     expect(ranking[1].finalPoints).toBe(22);
+  });
+
+  it("keeps 2026.2 pilots with fewer than three participations out of the official rank after four batteries", () => {
+    const ranking = buildRanking(
+      [
+        result({ pilotId: "a", pilotName: "Ana", batteryNumber: 1, finalPoints: 30, position: 1 }),
+        result({ pilotId: "a", pilotName: "Ana", batteryNumber: 2, finalPoints: 30, position: 1 }),
+        result({ pilotId: "b", pilotName: "Bruno", batteryNumber: 1, finalPoints: 20, position: 2 }),
+        result({ pilotId: "b", pilotName: "Bruno", batteryNumber: 2, finalPoints: 20, position: 2 }),
+        result({ pilotId: "b", pilotName: "Bruno", batteryNumber: 3, finalPoints: 20, position: 2 }),
+      ],
+      [1, 2, 3, 4],
+      { regulation: seasonRegulationFor({ year: 2026, period: 2 }) },
+    );
+
+    expect(ranking[0].pilotName).toBe("Ana");
+    expect(ranking[0].simulatedRank).toBe(1);
+    expect(ranking[0].realRank).toBeNull();
+    expect(ranking[0].rank).toBe(1);
+    expect(ranking[0].rankingStatus).toBe("NOT_COMPETING");
+    expect(ranking[1].pilotName).toBe("Bruno");
+    expect(ranking[1].realRank).toBe(1);
+    expect(ranking[1].rank).toBe(1);
+  });
+
+  it("only discards the worst 2026.2 result after more than six confirmed batteries", () => {
+    const regulation = seasonRegulationFor({ year: 2026, period: 2 });
+    const sixBatteryRanking = buildRanking(
+      [
+        result({ pilotId: "a", pilotName: "Ana", batteryNumber: 1, finalPoints: 24 }),
+        result({ pilotId: "a", pilotName: "Ana", batteryNumber: 2, finalPoints: 22 }),
+        result({ pilotId: "a", pilotName: "Ana", batteryNumber: 3, finalPoints: 20 }),
+        result({ pilotId: "a", pilotName: "Ana", batteryNumber: 4, finalPoints: 18 }),
+        result({ pilotId: "a", pilotName: "Ana", batteryNumber: 5, finalPoints: 16 }),
+        result({ pilotId: "a", pilotName: "Ana", batteryNumber: 6, finalPoints: 14 }),
+      ],
+      [1, 2, 3, 4, 5, 6],
+      { regulation },
+    );
+    const sevenBatteryRanking = buildRanking(
+      [
+        ...sixBatteryRanking[0].entries
+          .filter((entry) => entry.status !== "ABSENT")
+          .map((entry) => result({ pilotId: "a", pilotName: "Ana", batteryNumber: entry.batteryNumber, finalPoints: entry.finalPoints })),
+        result({ pilotId: "a", pilotName: "Ana", batteryNumber: 7, finalPoints: 12 }),
+      ],
+      [1, 2, 3, 4, 5, 6, 7],
+      { regulation },
+    );
+
+    expect(sixBatteryRanking[0].discardedPoints).toBe(0);
+    expect(sixBatteryRanking[0].finalPoints).toBe(114);
+    expect(sevenBatteryRanking[0].discardedPoints).toBe(12);
+    expect(sevenBatteryRanking[0].finalPoints).toBe(114);
+  });
+
+  it("keeps disqualified pilots visible but outside the official rank", () => {
+    const ranking = buildRanking(
+      [
+        result({ pilotId: "a", pilotName: "Ana", batteryNumber: 1, finalPoints: 24, position: 1 }),
+        result({ pilotId: "b", pilotName: "Bruno", batteryNumber: 1, finalPoints: 22, position: 2 }),
+      ],
+      [1],
+      { disqualifiedPilotIds: new Set(["a"]) },
+    );
+
+    expect(ranking[0].rankingStatus).toBe("DISQUALIFIED");
+    expect(ranking[0].simulatedRank).toBe(1);
+    expect(ranking[0].realRank).toBeNull();
+    expect(ranking[1].realRank).toBe(1);
   });
 });

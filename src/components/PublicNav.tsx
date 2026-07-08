@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3, Calendar, Home, Lock, User } from "lucide-react";
+import { BarChart3, BookOpenText, Calendar, Home, Lock, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -8,6 +8,7 @@ const navItems = [
   { path: "/", id: "home", label: "Home", icon: Home },
   { path: "/calendario", id: "calendar", label: "Calendário", icon: Calendar },
   { path: "/ranking", id: "ranking", label: "Ranking", icon: BarChart3 },
+  { path: "/regulamento", id: "regulation", label: "Regulamento", icon: BookOpenText },
   { path: "/pilotos", id: "drivers", label: "Pilotos", icon: User },
 ];
 
@@ -29,6 +30,7 @@ function titleForPath(pathname: string) {
   if (pathname.startsWith("/admin")) return "Admin";
   if (path.startsWith("/calendario")) return "Calendário";
   if (path.startsWith("/ranking") || path.includes("/ranking")) return "Ranking";
+  if (path.startsWith("/regulamento")) return "Regulamento";
   if (path.includes("/baterias/")) return "Corrida";
   if (path.startsWith("/pilotos/")) return "Perfil do Piloto";
   if (path.startsWith("/pilotos")) return "Pilotos";
@@ -42,6 +44,7 @@ function activeForPath(pathname: string) {
   if (path.startsWith("/calendario")) return "calendar";
   if (path.includes("/baterias/")) return "calendar";
   if (path.startsWith("/ranking") || path.includes("/ranking")) return "ranking";
+  if (path.startsWith("/regulamento")) return "regulation";
   if (path.startsWith("/pilotos")) return "drivers";
   return "home";
 }

@@ -1,4 +1,5 @@
 import type { BatteryResultInput, RankingRow } from "./types";
+import type { SeasonRegulation } from "./season-regulations";
 
 export const POSITION_POINTS = new Map<number, number>([
   [1, 24],
@@ -88,9 +89,18 @@ function tied(a: RankingRow, b: RankingRow) {
   return compareRows({ ...a, pilotName: "" }, { ...b, pilotName: "" }) === 0;
 }
 
-export function buildRanking(results: BatteryResultInput[], confirmedBatteryNumbers: number[]) {
+export function buildRanking(
+  results: BatteryResultInput[],
+  confirmedBatteryNumbers: number[],
+  options: {
+    regulation?: SeasonRegulation;
+    disqualifiedPilotIds?: Set<string>;
+  } = {},
+) {
   const batteryNumbers = [...confirmedBatteryNumbers].sort((a, b) => a - b);
   const pilots = new Map<string, BatteryResultInput[]>();
+  const regulation = options.regulation;
+  const disqualifiedPilotIds = options.disqualifiedPilotIds ?? new Set<string>();
 
   for (const result of results) {
     if (!pilots.has(result.pilotId)) pilots.set(result.pilotId, []);
@@ -125,15 +135,31 @@ export function buildRanking(results: BatteryResultInput[], confirmedBatteryNumb
 
     const grossPoints = entries.reduce((sum, entry) => sum + entry.finalPoints, 0);
     let discardedPoints = 0;
-    if (batteryNumbers.length >= 2 && entries.length > 0) {
+    const discardAfterConfirmedBatteries = regulation?.discardAfterConfirmedBatteries ?? 1;
+    if (batteryNumbers.length > discardAfterConfirmedBatteries && entries.length > 0) {
       const discard = [...entries].sort(compareEntriesForDiscard)[0];
       const target = entries.find((entry) => entry.batteryNumber === discard.batteryNumber);
       if (target) target.discarded = true;
       discardedPoints = discard.finalPoints;
     }
+    const participations = entries.filter((entry) => entry.status !== "ABSENT").length;
+    const minimumParticipations = regulation?.minimumParticipations ?? null;
+    const eligibilityStartsAfterConfirmedBatteries = regulation?.eligibilityStartsAfterConfirmedBatteries ?? null;
+    const enforceMinimumParticipations =
+      minimumParticipations != null &&
+      eligibilityStartsAfterConfirmedBatteries != null &&
+      batteryNumbers.length > eligibilityStartsAfterConfirmedBatteries;
+    const disqualified = disqualifiedPilotIds.has(pilotId);
+    const rankingStatus = disqualified
+      ? "DISQUALIFIED"
+      : enforceMinimumParticipations && participations < minimumParticipations
+        ? "NOT_COMPETING"
+        : "COMPETING";
 
     rows.push({
       rank: 0,
+      simulatedRank: 0,
+      realRank: null,
       pilotId,
       pilotName: sample.pilotName,
       pilotSlug: sample.pilotSlug,
@@ -142,20 +168,41 @@ export function buildRanking(results: BatteryResultInput[], confirmedBatteryNumb
       discardedPoints,
       finalPoints: grossPoints - discardedPoints,
       wins: entries.filter((entry) => entry.position === 1 && entry.status === "CLASSIFIED").length,
+      participations,
+      rankingStatus,
+      rankingStatusLabel:
+        rankingStatus === "DISQUALIFIED"
+          ? "desclassificado"
+          : rankingStatus === "NOT_COMPETING"
+            ? "nao competindo"
+            : null,
       entries,
     });
   }
 
   rows.sort(compareRows);
+  assignRanks(rows, "simulated");
+  assignRanks(rows.filter((row) => row.rankingStatus === "COMPETING"), "real");
 
-  let previous: RankingRow | null = null;
-  let previousRank = 0;
-  rows.forEach((row, index) => {
-    const rank = previous && tied(previous, row) ? previousRank : index + 1;
-    row.rank = rank;
-    previous = row;
-    previousRank = rank;
+  rows.forEach((row) => {
+    row.rank = row.realRank ?? row.simulatedRank;
   });
 
   return rows;
+}
+
+function assignRanks(rows: RankingRow[], mode: "simulated" | "real") {
+  let previous: RankingRow | null = null;
+  let previousRank = 0;
+
+  rows.forEach((row, index) => {
+    const rank = previous && tied(previous, row) ? previousRank : index + 1;
+    if (mode === "simulated") {
+      row.simulatedRank = rank;
+    } else {
+      row.realRank = rank;
+    }
+    previous = row;
+    previousRank = rank;
+  });
 }

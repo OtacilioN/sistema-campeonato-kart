@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { Prisma } from "@prisma/client";
 import { ADMIN_COOKIE, isAdminCookieValid } from "@/lib/admin-auth";
 import { ensureUniqueReviewPilotNames, parseManualReviewRows, parseReviewRowsFromForm, reviewPayloadFromOfficialReport, type ReviewPayload } from "@/lib/domain/review";
+import { seasonRegulationFor } from "@/lib/domain/season-regulations";
 import { pilotSlug, preferredPilotName } from "@/lib/domain/text";
 import { parseBrazilianDateTime } from "@/lib/domain/time";
 import type { ReviewRow } from "@/lib/domain/types";
@@ -98,7 +99,7 @@ export async function cancelBatteryAction(formData: FormData) {
 export async function createManualReviewAction(formData: FormData) {
   await requireAdmin();
   const batteryId = required(formData.get("batteryId"), "bateria");
-  const battery = await prisma.battery.findUnique({ where: { id: batteryId }, select: { status: true } });
+  const battery = await prisma.battery.findUnique({ where: { id: batteryId }, include: { season: true } });
   const rows = parseManualReviewRows(required(formData.get("rows"), "linhas"));
   const payload: ReviewPayload = {
     batteryLabel: null,
@@ -193,14 +194,14 @@ export async function createConfirmedResultReviewAction(formData: FormData) {
 export async function importOfficialPdfAction(formData: FormData) {
   await requireAdmin();
   const batteryId = required(formData.get("batteryId"), "bateria");
-  const battery = await prisma.battery.findUnique({ where: { id: batteryId }, select: { status: true } });
+  const battery = await prisma.battery.findUnique({ where: { id: batteryId }, include: { season: true } });
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) {
     throw new Error("Selecione um PDF oficial.");
   }
 
   const { parseOfficialReport } = await import("@/lib/domain/pdf");
-  const parsed = await parseOfficialReport(Buffer.from(await file.arrayBuffer()));
+  const parsed = await parseOfficialReport(Buffer.from(await file.arrayBuffer()), seasonRegulationFor(battery?.season));
   const payload = reviewPayloadFromOfficialReport(parsed);
   const review = await prisma.resultReview.create({
     data: {
@@ -238,7 +239,7 @@ export async function confirmReviewAction(formData: FormData) {
 
   let rows: ReviewRow[];
   try {
-    rows = parseReviewRowsFromForm(formData);
+    rows = parseReviewRowsFromForm(formData, seasonRegulationFor(review.battery.season));
     ensureUniqueReviewPilotNames(rows);
   } catch (error) {
     await rejectReviewConfirmation(reviewId, review.messages, readableErrorMessage(error));
@@ -483,6 +484,53 @@ export async function deleteBatteryVideoAction(formData: FormData) {
 
   revalidatePath(returnTo);
   redirect(videoRedirectPath(returnTo, "excluido"));
+}
+
+export async function disqualifyPilotFromSeasonAction(formData: FormData) {
+  await requireAdmin();
+  const seasonId = required(formData.get("seasonId"), "temporada");
+  const pilotId = required(formData.get("pilotId"), "piloto");
+  const reason = String(formData.get("reason") ?? "").trim() || null;
+
+  const season = await prisma.season.findUnique({ where: { id: seasonId }, select: { slug: true } });
+  if (!season) throw new Error("Temporada não encontrada.");
+
+  await prisma.seasonDisqualification.upsert({
+    where: { seasonId_pilotId: { seasonId, pilotId } },
+    update: { reason, revokedAt: null },
+    create: { seasonId, pilotId, reason },
+  });
+
+  revalidateSeasonPaths(season.slug);
+  revalidatePath("/admin");
+}
+
+export async function reinstatePilotInSeasonAction(formData: FormData) {
+  await requireAdmin();
+  const seasonId = required(formData.get("seasonId"), "temporada");
+  const pilotId = required(formData.get("pilotId"), "piloto");
+
+  const season = await prisma.season.findUnique({ where: { id: seasonId }, select: { slug: true } });
+  if (!season) throw new Error("Temporada não encontrada.");
+
+  await prisma.seasonDisqualification.updateMany({
+    where: { seasonId, pilotId, revokedAt: null },
+    data: { revokedAt: new Date() },
+  });
+
+  revalidateSeasonPaths(season.slug);
+  revalidatePath("/admin");
+}
+
+function revalidateSeasonPaths(seasonSlug: string) {
+  revalidatePath("/");
+  revalidatePath("/ranking");
+  revalidatePath("/pilotos");
+  revalidatePath("/regulamento");
+  revalidatePath(`/temporadas/${seasonSlug}`);
+  revalidatePath(`/temporadas/${seasonSlug}/ranking`);
+  revalidatePath(`/temporadas/${seasonSlug}/pilotos`);
+  revalidatePath(`/temporadas/${seasonSlug}/regulamento`);
 }
 
 function isVideomakerPasswordValid(password: string) {

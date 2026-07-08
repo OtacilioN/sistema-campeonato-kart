@@ -125,7 +125,7 @@ textarea {
   box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.08);
   display: grid;
   gap: 4px;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   left: 0;
   padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
   position: fixed;
@@ -496,6 +496,42 @@ h3 {
   grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
 }
 
+.admin-season-control {
+  border-top: 1px solid var(--border-light);
+  display: grid;
+  gap: 12px;
+  margin-top: 22px;
+  padding-top: 18px;
+}
+
+.admin-disqualification-list {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-disqualification-item {
+  align-items: center;
+  background: var(--surface-muted);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, auto);
+  padding: 12px;
+}
+
+.admin-disqualification-item strong {
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.admin-disqualification-form {
+  align-items: center;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(160px, 1fr) auto;
+}
+
 .manual-form {
   background: var(--surface-muted);
   border-radius: 12px;
@@ -743,8 +779,8 @@ h3 {
 .review-grid {
   display: grid;
   gap: 6px;
-  grid-template-columns: 48px 64px 64px minmax(220px, 1.6fr) 64px 120px 72px 100px 112px 90px 90px 100px 72px 86px 78px minmax(160px, 1fr) 82px;
-  min-width: 1550px;
+  grid-template-columns: 48px 48px 64px 64px minmax(220px, 1.6fr) 64px 120px 72px 100px 112px 90px 90px 100px 72px 86px 78px minmax(160px, 1fr) 82px;
+  min-width: 1600px;
 }
 
 .review-grid.header {
@@ -896,7 +932,7 @@ h3 {
   bottom: 0;
   box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.04);
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   height: var(--bottom-nav-height);
   left: 50%;
   margin: 0 auto;
@@ -916,7 +952,7 @@ h3 {
   display: flex;
   flex-direction: column;
   font-family: var(--font-ui);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 500;
   gap: 4px;
   height: 100%;
@@ -1592,6 +1628,10 @@ h3 {
   border-bottom: 0;
 }
 
+.ranking-row.muted-ranking-row {
+  opacity: 0.52;
+}
+
 .ranking-driver {
   display: flex;
   flex-direction: column;
@@ -1626,6 +1666,11 @@ h3 {
   font-style: normal;
   font-weight: 600;
   padding: 1px 6px;
+}
+
+.ranking-meta {
+  color: var(--text-muted);
+  font-size: 11px;
 }
 
 .ranking-months {
@@ -1671,6 +1716,92 @@ h3 {
 .ranking-total small {
   color: var(--text-muted);
   font-size: 11px;
+}
+
+.rank-pos.simulated {
+  background: var(--surface-muted);
+  border: 1px dashed var(--border-strong);
+  color: var(--text-secondary);
+}
+
+.ranking-rule-alert {
+  align-items: flex-start;
+  background: #fff8e8;
+  border-color: #f2d08a;
+  display: flex;
+  gap: 12px;
+}
+
+.ranking-rule-alert strong {
+  color: var(--text-primary);
+  display: block;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.ranking-rule-alert p {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.regulation-hero {
+  display: grid;
+  gap: 16px;
+}
+
+.regulation-hero h2 {
+  font-size: 22px;
+  line-height: 1.25;
+  text-transform: none;
+}
+
+.regulation-hero p {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.55;
+  margin-top: 8px;
+}
+
+.regulation-kpis {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.regulation-kpis span {
+  background: var(--surface-muted);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 12px;
+  padding: 10px;
+}
+
+.regulation-kpis strong {
+  color: var(--text-primary);
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 22px;
+}
+
+.regulation-section-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.regulation-section h2 {
+  font-size: 20px;
+  margin-bottom: 10px;
+  text-transform: none;
+}
+
+.regulation-section ul {
+  color: var(--text-secondary);
+  display: grid;
+  gap: 8px;
+  line-height: 1.5;
+  padding-left: 18px;
 }
 
 .profile-identity {

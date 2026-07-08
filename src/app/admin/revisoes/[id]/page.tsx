@@ -6,6 +6,7 @@ import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { ADMIN_COOKIE, isAdminCookieValid } from "@/lib/admin-auth";
 import { reviewStatusLabel } from "@/lib/domain/labels";
 import type { ReviewPayload } from "@/lib/domain/review";
+import { seasonRegulationFor } from "@/lib/domain/season-regulations";
 import { formatDateTime } from "@/lib/domain/time";
 import { prisma } from "@/lib/prisma";
 
@@ -29,6 +30,7 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
   const payload = review.reviewPayload as unknown as ReviewPayload;
   const rows = payload.rows ?? [];
   const currentPole = rows.findIndex((row) => row.poleBonus > 0);
+  const regulation = seasonRegulationFor(review.battery.season);
   const visibleMessages = review.messages.filter((message) => !message.startsWith("Nome truncado detectado:"));
 
   return (
@@ -63,11 +65,21 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
           <input type="hidden" name="rowCount" value={rows.length} />
 
           <section className="notice neutral">
-            <p>Selecione obrigatoriamente o piloto que fez a pole position antes de confirmar o resultado.</p>
+            <p>
+              Selecione obrigatoriamente o piloto da pole position. Nesta temporada, pole vale +{regulation.poleBonus} pts e melhor volta vale +{regulation.bestLapBonus} pts.
+            </p>
           </section>
+          {regulation.penaltyPresets.length ? (
+            <datalist id="penalty-presets">
+              {regulation.penaltyPresets.map((points) => (
+                <option key={points} value={points} />
+              ))}
+            </datalist>
+          ) : null}
 
           <div className="review-grid header">
             <span>Pole</span>
+            <span>MV+</span>
             <span>Pos</span>
             <span>#</span>
             <span>Piloto</span>
@@ -97,6 +109,13 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
                 disabled={row.status === "NC" || review.status === "CONFIRMED"}
                 aria-label={`Pole ${row.fullName}`}
               />
+              <input
+                aria-label={`Melhor volta ${row.fullName}`}
+                defaultChecked={row.bestLapBonus > 0}
+                disabled={row.status === "NC" || review.status === "CONFIRMED"}
+                name={`rows.${index}.bestLapAwarded`}
+                type="checkbox"
+              />
               <input name={`rows.${index}.position`} defaultValue={row.position ?? ""} />
               <input name={`rows.${index}.pilotNumber`} defaultValue={row.pilotNumber ?? ""} />
               <input name={`rows.${index}.fullName`} defaultValue={row.fullName} required />
@@ -113,10 +132,9 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
               <input name={`rows.${index}.lastLapTime`} defaultValue={row.lastLapTime ?? ""} />
               <input name={`rows.${index}.totalLaps`} defaultValue={row.totalLaps ?? ""} />
               <input name={`rows.${index}.averageSpeed`} defaultValue={row.averageSpeed ?? ""} />
-              <input name={`rows.${index}.penaltyPoints`} defaultValue={row.penaltyPoints} min="0" step="1" type="number" />
+              <input list="penalty-presets" name={`rows.${index}.penaltyPoints`} defaultValue={row.penaltyPoints} min="0" step="1" type="number" />
               <input name={`rows.${index}.penaltyReason`} defaultValue={row.penaltyReason ?? ""} />
               <input name={`rows.${index}.finalPoints`} value={row.finalPoints} readOnly />
-              <input type="hidden" name={`rows.${index}.bestLapBonus`} value={row.bestLapBonus} />
             </div>
           ))}
 

@@ -18,6 +18,7 @@ model Pilot {
   updatedAt   DateTime        @updatedAt
   results     BatteryResult[]
   lapToLaps   LapToLap[]
+  disqualifications SeasonDisqualification[]
 
   @@unique([fullName])
 }
@@ -32,8 +33,24 @@ model Season {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   batteries Battery[]
+  disqualifications SeasonDisqualification[]
 
   @@unique([year, period])
+}
+
+model SeasonDisqualification {
+  id        String    @id @default(cuid())
+  seasonId  String
+  pilotId   String
+  reason    String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  revokedAt DateTime?
+  season    Season    @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  pilot     Pilot     @relation(fields: [pilotId], references: [id], onDelete: Cascade)
+
+  @@unique([seasonId, pilotId])
+  @@index([pilotId])
 }
 
 model Battery {

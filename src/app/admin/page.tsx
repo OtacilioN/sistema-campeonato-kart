@@ -8,7 +8,9 @@ import {
   createConfirmedResultReviewAction,
   createManualReviewAction,
   createSeasonAction,
+  disqualifyPilotFromSeasonAction,
   importOfficialPdfAction,
+  reinstatePilotInSeasonAction,
 } from "@/app/actions";
 import { AutoFileUploadForm } from "@/components/AutoFileUploadForm";
 import { IconTile, SectionHead, VzBadge, VzButton, VzCard } from "@/components/VelozesUI";
@@ -30,8 +32,12 @@ export default async function AdminPage() {
           orderBy: { number: "asc" },
           include: {
             reviews: { orderBy: { createdAt: "desc" } },
-            results: true,
+            results: { include: { pilot: true } },
           },
+        },
+        disqualifications: {
+          where: { revokedAt: null },
+          include: { pilot: true },
         },
       },
     });
@@ -78,7 +84,19 @@ export default async function AdminPage() {
           </VzCard>
         ) : null}
 
-        {seasons.map((season) => (
+        {seasons.map((season) => {
+          const seasonPilots = Array.from(
+            new Map(
+              season.batteries
+                .flatMap((battery) => battery.results.map((result) => result.pilot))
+                .map((pilot) => [pilot.id, pilot]),
+            ).values(),
+          ).sort((a, b) => (a.displayName || a.fullName).localeCompare(b.displayName || b.fullName, "pt-BR"));
+          const activeDisqualificationByPilotId = new Map(
+            season.disqualifications.map((disqualification) => [disqualification.pilotId, disqualification]),
+          );
+
+          return (
           <VzCard key={season.id}>
             <div className="section-row">
               <div>
@@ -160,8 +178,50 @@ export default async function AdminPage() {
                 </article>
               ))}
             </div>
+
+            <div className="admin-season-control">
+              <SectionHead icon="users" sub="Use somente quando o piloto estiver banido ou desclassificado da temporada inteira." title="Desclassificacao da temporada" />
+              {seasonPilots.length ? (
+                <div className="admin-disqualification-list">
+                  {seasonPilots.map((pilot) => {
+                    const activeDisqualification = activeDisqualificationByPilotId.get(pilot.id);
+                    const pilotName = pilot.displayName || pilot.fullName;
+
+                    return (
+                      <article className="admin-disqualification-item" key={pilot.id}>
+                        <div>
+                          <strong>{pilotName}</strong>
+                          <p className="meta">
+                            {activeDisqualification
+                              ? `Desclassificado${activeDisqualification.reason ? `: ${activeDisqualification.reason}` : ""}`
+                              : "Competindo na temporada"}
+                          </p>
+                        </div>
+                        {activeDisqualification ? (
+                          <form action={reinstatePilotInSeasonAction}>
+                            <input type="hidden" name="seasonId" value={season.id} />
+                            <input type="hidden" name="pilotId" value={pilot.id} />
+                            <VzButton type="submit" variant="secondary">Reintegrar</VzButton>
+                          </form>
+                        ) : (
+                          <form className="admin-disqualification-form" action={disqualifyPilotFromSeasonAction}>
+                            <input type="hidden" name="seasonId" value={season.id} />
+                            <input type="hidden" name="pilotId" value={pilot.id} />
+                            <input className="input" name="reason" placeholder="Motivo opcional" />
+                            <VzButton type="submit" variant="danger">Desclassificar</VzButton>
+                          </form>
+                        )}
+                      </article>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="muted">Nenhum piloto com resultado confirmado nesta temporada.</p>
+              )}
+            </div>
           </VzCard>
-        ))}
+          );
+        })}
       </div>
     );
   }

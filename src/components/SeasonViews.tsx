@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { POSITION_POINTS } from "@/lib/domain/scoring";
+import { seasonRegulationFor } from "@/lib/domain/season-regulations";
 import { uploadLapToLapAction } from "@/app/actions";
 import { AutoFileUploadForm } from "@/components/AutoFileUploadForm";
 import { LapCharts } from "@/components/LapCharts";
@@ -117,11 +118,21 @@ function rowsForBattery(ranking: RankingRow[], batteryNumber: number | null) {
     return ranking.map((pilot) => ({ entry: null, pilot, rank: pilot.rank, points: pilot.finalPoints }));
   }
 
-  return ranking
+  const sorted = ranking
     .map((pilot) => ({ pilot, entry: pilot.entries.find((entry) => entry.batteryNumber === batteryNumber) ?? null }))
     .filter((row): row is { pilot: RankingRow; entry: RankingRow["entries"][number] } => Boolean(row.entry))
     .sort((a, b) => b.entry.finalPoints - a.entry.finalPoints || (a.entry.position ?? 999) - (b.entry.position ?? 999) || a.pilot.rank - b.pilot.rank)
-    .map((row, index) => ({ ...row, rank: index + 1, points: row.entry.finalPoints }));
+    .map((row, index) => ({ ...row, simulatedRank: index + 1, points: row.entry.finalPoints }));
+  let realRank = 0;
+
+  return sorted.map((row) => {
+    if (row.pilot.rankingStatus !== "COMPETING") {
+      return { ...row, rank: row.simulatedRank };
+    }
+
+    realRank += 1;
+    return { ...row, rank: realRank };
+  });
 }
 
 function dateParts(value: Date | null | undefined) {
@@ -150,6 +161,33 @@ function positionPlace(value: number | null | undefined) {
   return value ? `${ordinal(value)} lugar` : ordinal(value);
 }
 
+function officialRankingRows(ranking: RankingRow[]) {
+  return ranking.filter((row) => row.rankingStatus === "COMPETING");
+}
+
+function rankingRowClass(pilot: RankingRow) {
+  return `ranking-row ${pilot.rankingStatus !== "COMPETING" ? "muted-ranking-row" : ""}`;
+}
+
+function rankClassName(pilot: RankingRow, rank: number) {
+  return `rank-pos ${rank <= 3 && pilot.rankingStatus === "COMPETING" ? `top-${rank}` : ""} ${pilot.rankingStatus !== "COMPETING" ? "simulated" : ""}`;
+}
+
+function rankingStatusBadge(pilot: RankingRow) {
+  if (!pilot.rankingStatusLabel) return null;
+  return (
+    <VzBadge tone={pilot.rankingStatus === "DISQUALIFIED" ? "danger" : "warning"}>
+      {pilot.rankingStatusLabel}
+    </VzBadge>
+  );
+}
+
+function rankingMeta(pilot: RankingRow) {
+  const participationText = `${pilot.participations} participacao${pilot.participations === 1 ? "" : "es"}`;
+  if (pilot.rankingStatus === "COMPETING") return participationText;
+  return `${participationText} · posicao simulada`;
+}
+
 async function getSeasonForContext(seasonSlug?: string) {
   const season = seasonSlug ? await getSeasonBySlug(seasonSlug) : await getActiveSeason();
   if (seasonSlug && !season) notFound();
@@ -159,7 +197,7 @@ async function getSeasonForContext(seasonSlug?: string) {
 export async function SeasonHomeView({ seasonSlug }: { seasonSlug?: string }) {
   const [season, rankingData] = await Promise.all([getSeasonForContext(seasonSlug), getPublicRanking(seasonSlug)]);
   const nextBattery = season?.batteries.find((battery) => battery.status !== "CONFIRMED" && battery.status !== "CANCELED");
-  const podium = rankingData.ranking.slice(0, 5);
+  const podium = officialRankingRows(rankingData.ranking).slice(0, 5);
   const countdown = timeUntilEvent(nextBattery?.scheduledAt);
   const speeds = speedStats(season);
   const seasonLabel = season?.name ?? "Temporada";
@@ -364,10 +402,15 @@ export async function SeasonRankingView({
   if (seasonSlug && !season) notFound();
   const query = await searchParams;
   const confirmedBatteries = season?.batteries.filter((battery) => battery.status === "CONFIRMED") ?? [];
+  const regulation = seasonRegulationFor(season);
   const requestedBattery = Number(query?.bateria);
   const selectedBatteryNumber = confirmedBatteries.some((battery) => battery.number === requestedBattery) ? requestedBattery : null;
   const displayedRows = rowsForBattery(ranking, selectedBatteryNumber);
   const rankingPath = contextPath(seasonSlug, "/ranking");
+  const showEligibilityNotice =
+    regulation.minimumParticipations != null &&
+    regulation.eligibilityStartsAfterConfirmedBatteries != null &&
+    confirmedBatteries.length > regulation.eligibilityStartsAfterConfirmedBatteries;
 
   return (
     <div className="vz-page tight ranking-page">
@@ -396,13 +439,15 @@ export async function SeasonRankingView({
 
         {displayedRows.length ? (
           displayedRows.map(({ entry, pilot, points, rank }) => (
-            <a className="ranking-row" href={pilotPath(pilot.pilotSlug, seasonSlug)} key={pilot.pilotId}>
-              <span className={`rank-pos ${rank <= 3 ? `top-${rank}` : ""}`}>{rank}</span>
+            <a className={rankingRowClass(pilot)} href={pilotPath(pilot.pilotSlug, seasonSlug)} key={pilot.pilotId}>
+              <span className={rankClassName(pilot, rank)}>{rank}</span>
               <span className="ranking-driver">
                 <span>
                   <strong>{pilot.pilotName}</strong>
                   <em>{pilot.uf ?? "UF não informada"}</em>
+                  {rankingStatusBadge(pilot)}
                 </span>
+                <span className="ranking-meta">{rankingMeta(pilot)}</span>
                 <span className="ranking-months">
                   {(entry ? [entry] : pilot.entries).map((item) => (
                     <small className={item.discarded ? "discarded" : ""} key={`${pilot.pilotId}-${item.batteryNumber}`}>
@@ -423,6 +468,19 @@ export async function SeasonRankingView({
         )}
       </VzCard>
 
+      {showEligibilityNotice ? (
+        <VzCard className="ranking-rule-alert">
+          <VzIcon name="info" size={22} />
+          <div>
+            <strong>Disputa oficial da temporada</strong>
+            <p>
+              Com mais de {regulation.eligibilityStartsAfterConfirmedBatteries} baterias concluidas, so ocupa posicao real quem tem pelo menos {regulation.minimumParticipations} participacoes.
+              Os demais aparecem com posicao simulada e tag de nao competindo.
+            </p>
+          </div>
+        </VzCard>
+      ) : null}
+
       <VzCard>
         <div style={{ alignItems: "center", display: "flex", gap: 10 }}>
           <VzIcon name="info" size={22} />
@@ -440,9 +498,10 @@ export async function SeasonRankingView({
           ))}
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
-          <VzBadge icon="check" tone="success">Pole +1</VzBadge>
-          <VzBadge icon="check" tone="success">Melhor volta +1</VzBadge>
+          <VzBadge icon="check" tone="success">Pole +{regulation.poleBonus}</VzBadge>
+          <VzBadge icon="check" tone="success">Melhor volta +{regulation.bestLapBonus}</VzBadge>
           <VzBadge tone="neutral">NC 0</VzBadge>
+          <VzBadge tone="neutral">{regulation.countedBatteryCount} melhores de {regulation.expectedBatteryCount}</VzBadge>
         </div>
         <div style={{ alignItems: "flex-start", background: "var(--danger-soft)", borderRadius: "var(--radius-md)", display: "flex", gap: 10, padding: 12 }}>
           <VzIcon name="info" size={20} />
@@ -450,9 +509,54 @@ export async function SeasonRankingView({
             <div style={{ fontSize: 14, fontWeight: 600 }}>Penalização</div>
             <div style={{ color: "var(--text-secondary)", fontSize: 12 }}>Faltas, conduta antidesportiva ou descumprimento de regras.</div>
           </div>
-          <span style={{ color: "var(--danger)", fontFamily: "var(--font-mono)", fontSize: 18, fontWeight: 700 }}>-5 <small>pts</small></span>
+          <span style={{ color: "var(--danger)", fontFamily: "var(--font-mono)", fontSize: 18, fontWeight: 700 }}>
+            -{regulation.penaltyPresets.join("/")} <small>pts</small>
+          </span>
         </div>
       </VzCard>
+    </div>
+  );
+}
+
+export async function SeasonRegulationView({ seasonSlug }: { seasonSlug?: string }) {
+  const season = await getSeasonForContext(seasonSlug);
+  const regulation = seasonRegulationFor(season);
+
+  return (
+    <div className="vz-page tight regulation-page">
+      <SectionHead
+        icon="file-text"
+        sub={season?.name ?? "Temporada ativa"}
+        title={regulation.title}
+      />
+
+      <VzCard className="regulation-hero">
+        <div>
+          <h2>{regulation.summary}</h2>
+          <p>
+            O ranking publico usa somente baterias confirmadas. Regras especificas desta temporada sao aplicadas apenas aos resultados novos ou revisados desta temporada.
+          </p>
+        </div>
+        <div className="regulation-kpis">
+          <span><strong>{regulation.expectedBatteryCount}</strong> baterias</span>
+          <span><strong>{regulation.countedBatteryCount}</strong> melhores</span>
+          <span><strong>+{regulation.poleBonus}</strong> pole</span>
+          <span><strong>+{regulation.bestLapBonus}</strong> melhor volta</span>
+        </div>
+      </VzCard>
+
+      <div className="regulation-section-grid">
+        {regulation.sections.map((section) => (
+          <VzCard className="regulation-section" key={section.title}>
+            <h2>{section.title}</h2>
+            <ul>
+              {section.items.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </VzCard>
+        ))}
+      </div>
     </div>
   );
 }
@@ -475,7 +579,7 @@ export async function SeasonPilotsView({ seasonSlug }: { seasonSlug?: string }) 
             <RankRow
               href={pilotPath(pilot.pilotSlug, seasonSlug)}
               key={pilot.pilotId}
-              meta={`${pilot.uf ?? "UF não informada"} · ${pilot.entries.length} baterias · ${season?.name ?? "temporada ativa"}`}
+              meta={`${pilot.uf ?? "UF não informada"} · ${rankingMeta(pilot)} · ${season?.name ?? "temporada ativa"}`}
               name={pilot.pilotName}
               points={pilot.finalPoints}
               rank={pilot.rank}
@@ -495,6 +599,17 @@ export async function SeasonPilotProfileView({ pilotSlug, seasonSlug }: { pilotS
   if (seasonSlug && !rankingData.season) notFound();
 
   const rankingRow = rankingData.ranking.find((row) => row.pilotId === pilot.id);
+  const officialRankingCount = officialRankingRows(rankingData.ranking).length;
+  const profileRankLabel = rankingRow
+    ? rankingRow.rankingStatus === "COMPETING"
+      ? `${rankingRow.rank}º colocado`
+      : `${rankingRow.simulatedRank}º simulado · ${rankingRow.rankingStatusLabel}`
+    : "Sem ranking";
+  const profilePositionLabel = rankingRow
+    ? rankingRow.rankingStatus === "COMPETING"
+      ? `${rankingRow.rank}º`
+      : `${rankingRow.simulatedRank}º simulado`
+    : "—";
   const confirmedResults = pilot.results.filter((result) => {
     if (result.battery.status !== "CONFIRMED") return false;
     return seasonSlug ? result.battery.season.slug === seasonSlug : true;
@@ -509,7 +624,7 @@ export async function SeasonPilotProfileView({ pilotSlug, seasonSlug }: { pilotS
           <div>
             <h1>{pilot.displayName || pilot.fullName}</h1>
             <span className="rank-badge">
-              <VzIcon name="crown" size={13} /> {rankingRow ? `${rankingRow.rank}º colocado` : "Sem ranking"}
+              <VzIcon name="crown" size={13} /> {profileRankLabel}
             </span>
             <p>{rankingData.season?.name ?? "Histórico do piloto"}</p>
           </div>
@@ -525,8 +640,8 @@ export async function SeasonPilotProfileView({ pilotSlug, seasonSlug }: { pilotS
         <div className="stat-tile">
           <span>Posição geral</span>
           <VzIcon name="bar-chart-3" size={18} />
-          <strong>{rankingRow ? `${rankingRow.rank}º` : "—"}</strong>
-          <small>{rankingData.ranking.length ? `de ${rankingData.ranking.length}` : "sem ranking"}</small>
+          <strong>{profilePositionLabel}</strong>
+          <small>{officialRankingCount ? `de ${officialRankingCount} oficiais` : "sem ranking oficial"}</small>
         </div>
         <div className="stat-tile">
           <span>Melhor volta</span>

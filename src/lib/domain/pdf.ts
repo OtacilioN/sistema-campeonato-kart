@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { calculateFinalPoints, pointsForPosition } from "./scoring";
+import { seasonRegulationFor, type SeasonRegulation } from "./season-regulations";
 import { namesMatch } from "./text";
 import type { LapValidationResult, ParsedLap, ParsedLapToLap, ParsedOfficialReport, ReviewRow } from "./types";
 
@@ -93,12 +94,12 @@ function parseOfficialRow(line: string): ReviewRow | null {
   };
 }
 
-export async function parseOfficialReport(input: Buffer | Uint8Array | File): Promise<ParsedOfficialReport> {
+export async function parseOfficialReport(input: Buffer | Uint8Array | File, regulation: SeasonRegulation = seasonRegulationFor(null)): Promise<ParsedOfficialReport> {
   const rawText = await extractText(input);
-  return parseOfficialReportText(rawText);
+  return parseOfficialReportText(rawText, regulation);
 }
 
-export function parseOfficialReportText(rawText: string): ParsedOfficialReport {
+export function parseOfficialReportText(rawText: string, regulation: SeasonRegulation = seasonRegulationFor(null)): ParsedOfficialReport {
   const header = parseHeader(rawText);
   const bestLapMatch = rawText.match(/Melhor volta:\s*(.+?)\s+\((\d{2}:\d{2}\.\d{3})\)/i);
   const bestLapPilotName = bestLapMatch?.[1]?.trim() ?? null;
@@ -108,7 +109,7 @@ export function parseOfficialReportText(rawText: string): ParsedOfficialReport {
 
   for (const row of rows) {
     if (row.status !== "NC" && bestLapTime && row.bestLapTime === bestLapTime) {
-      row.bestLapBonus = 1;
+      row.bestLapBonus = regulation.bestLapBonus;
       row.finalPoints = calculateFinalPoints(row);
     }
   }

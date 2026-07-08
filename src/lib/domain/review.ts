@@ -1,4 +1,5 @@
 import { calculateFinalPoints, pointsForPosition } from "./scoring";
+import { seasonRegulationFor, type SeasonRegulation } from "./season-regulations";
 import { namesMatch, normalizeName, pilotSlug } from "./text";
 import type { ParsedOfficialReport, ReviewRow } from "./types";
 
@@ -62,7 +63,7 @@ export function parseManualReviewRows(input: string): ReviewRow[] {
     });
 }
 
-export function parseReviewRowsFromForm(formData: FormData): ReviewRow[] {
+export function parseReviewRowsFromForm(formData: FormData, regulation: SeasonRegulation = seasonRegulationFor(null)): ReviewRow[] {
   const count = Number(formData.get("rowCount") ?? 0);
   const rawPoleIndex = String(formData.get("poleIndex") ?? "").trim();
   const poleIndex = /^\d+$/.test(rawPoleIndex) ? Number(rawPoleIndex) : null;
@@ -71,9 +72,9 @@ export function parseReviewRowsFromForm(formData: FormData): ReviewRow[] {
     const status = String(formData.get(`rows.${index}.status`) ?? "CLASSIFIED") as "CLASSIFIED" | "NC";
     const position = status === "NC" ? null : numberOrNull(formData.get(`rows.${index}.position`));
     const positionPoints = pointsForPosition(position, status);
-    const bestLapBonus = Number(formData.get(`rows.${index}.bestLapBonus`) ?? 0);
+    const bestLapBonus = formData.get(`rows.${index}.bestLapAwarded`) === "on" ? regulation.bestLapBonus : 0;
     const penaltyPoints = nonNegativeNumberOrZero(formData.get(`rows.${index}.penaltyPoints`));
-    const poleBonus = index === poleIndex && status !== "NC" ? 1 : 0;
+    const poleBonus = index === poleIndex && status !== "NC" ? regulation.poleBonus : 0;
 
     const row: ReviewRow = {
       fullName: String(formData.get(`rows.${index}.fullName`) ?? "").trim(),
