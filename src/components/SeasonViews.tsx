@@ -185,7 +185,7 @@ function rankingStatusBadge(pilot: RankingRow) {
 function rankingMeta(pilot: RankingRow) {
   const participationText = `${pilot.participations} participacao${pilot.participations === 1 ? "" : "es"}`;
   if (pilot.rankingStatus === "COMPETING") return participationText;
-  return `${participationText} · posicao simulada`;
+  return `${participationText} · posição simulada`;
 }
 
 async function getSeasonForContext(seasonSlug?: string) {
@@ -474,8 +474,8 @@ export async function SeasonRankingView({
           <div>
             <strong>Disputa oficial da temporada</strong>
             <p>
-              Com mais de {regulation.eligibilityStartsAfterConfirmedBatteries} baterias concluidas, so ocupa posicao real quem tem pelo menos {regulation.minimumParticipations} participacoes.
-              Os demais aparecem com posicao simulada e tag de nao competindo.
+              Com mais de {regulation.eligibilityStartsAfterConfirmedBatteries} baterias concluídas, só ocupa posição real quem tem pelo menos {regulation.minimumParticipations} participações.
+              Os demais aparecem com posição simulada e tag de não competindo.
             </p>
           </div>
         </VzCard>
@@ -534,7 +534,7 @@ export async function SeasonRegulationView({ seasonSlug }: { seasonSlug?: string
         <div>
           <h2>{regulation.summary}</h2>
           <p>
-            O ranking publico usa somente baterias confirmadas. Regras especificas desta temporada sao aplicadas apenas aos resultados novos ou revisados desta temporada.
+            O ranking público usa somente baterias confirmadas. Regras específicas desta temporada são aplicadas apenas aos resultados novos ou revisados desta temporada.
           </p>
         </div>
         <div className="regulation-kpis">
