@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ensureUniqueReviewPilotNames, parseReviewRowsFromForm } from "./review";
+import { seasonRegulationFor } from "./season-regulations";
 
 function reviewForm(input: {
   names?: string[];
@@ -55,6 +56,16 @@ describe("review form parsing", () => {
 
     expect(rows.map((row) => row.poleBonus)).toEqual([0, 1]);
     expect(rows[1].finalPoints).toBe(rows[1].positionPoints + 1);
+  });
+
+  it("accepts different pilots for pole and best lap with the 2026.2 bonuses", () => {
+    const formData = reviewForm({ poleIndex: "1" });
+    formData.set("rows.0.bestLapAwarded", "on");
+
+    const rows = parseReviewRowsFromForm(formData, seasonRegulationFor({ year: 2026, period: 2 }));
+
+    expect(rows.map((row) => row.poleBonus)).toEqual([0, 2]);
+    expect(rows.map((row) => row.bestLapBonus)).toEqual([3, 0]);
   });
 
   it("subtracts positive penalty values from final points", () => {

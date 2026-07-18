@@ -103,7 +103,7 @@ export function parseReviewRowsFromForm(formData: FormData, regulation: SeasonRe
     return row;
   });
 
-  if (count > 0 && rows.filter((row) => row.poleBonus === 1).length !== 1) {
+  if (count > 0 && rows.filter((row) => row.poleBonus > 0).length !== 1) {
     throw new Error("Selecione exatamente um piloto classificado como pole position.");
   }
 
