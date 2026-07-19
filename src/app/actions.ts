@@ -13,6 +13,8 @@ import type { ParsedLapToLap, ReviewRow } from "@/lib/domain/types";
 import { parseYouTubeVideoLink } from "@/lib/domain/youtube";
 import { prisma } from "@/lib/prisma";
 
+const MAX_LAP_TO_LAP_FILE_SIZE_BYTES = 3 * 1024 * 1024;
+
 async function requireAdmin() {
   const cookieStore = await cookies();
   if (!isAdminCookieValid(cookieStore.get(ADMIN_COOKIE)?.value)) {
@@ -364,6 +366,13 @@ export type LapToLapUploadState = {
   message: string;
 };
 
+async function findBatteryResultForLapToLap(resultId: string) {
+  return prisma.batteryResult.findUnique({
+    where: { id: resultId },
+    include: { pilot: true, lapToLap: true },
+  });
+}
+
 export async function uploadLapToLapAction(
   _previousState: LapToLapUploadState,
   formData: FormData,
@@ -380,10 +389,24 @@ export async function uploadLapToLapAction(
     return { status: "error", message: "Selecione um PDF de lap-to-lap." };
   }
 
-  const result = await prisma.batteryResult.findUnique({
-    where: { id: resultId },
-    include: { pilot: true, lapToLap: true },
-  });
+  if (file.size > MAX_LAP_TO_LAP_FILE_SIZE_BYTES) {
+    return { status: "error", message: "O PDF deve ter no máximo 3 MB." };
+  }
+
+  let result: Awaited<ReturnType<typeof findBatteryResultForLapToLap>>;
+  try {
+    result = await findBatteryResultForLapToLap(resultId);
+  } catch (error) {
+    console.error("[lap-to-lap] Falha ao consultar resultado", {
+      resultId,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return {
+      status: "error",
+      message: "Não foi possível consultar o resultado agora. Tente novamente em alguns instantes.",
+    };
+  }
+
   if (!result) {
     return { status: "error", message: "O resultado desta bateria não foi encontrado." };
   }
@@ -583,7 +606,9 @@ function isVideomakerPasswordValid(password: string) {
 }
 
 function safeReturnPath(path: string) {
-  return path.startsWith("/") && !path.startsWith("//") ? path.split(/[?#]/)[0] || "/" : "/";
+  return path.startsWith("/") && !path.startsWith("//") && !path.includes("\\")
+    ? path.split(/[?#]/)[0] || "/"
+    : "/";
 }
 
 function videoRedirectPath(path: string, status: string) {
