@@ -489,7 +489,7 @@ export async function SeasonRankingView({
           A pontuação é definida com base na sua posição em cada corrida.
         </div>
         <div className="rule-mini-grid" style={{ marginBottom: 14 }}>
-          {Array.from(POSITION_POINTS.entries()).slice(0, 6).map(([position, points]) => (
+          {Array.from(POSITION_POINTS.entries()).map(([position, points]) => (
             <div className="rule-mini" key={position}>
               <span>{position}º lugar</span>
               <strong>{points} <small>pts</small></strong>
