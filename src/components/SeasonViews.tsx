@@ -2,9 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { POSITION_POINTS } from "@/lib/domain/scoring";
 import { seasonRegulationFor } from "@/lib/domain/season-regulations";
-import { uploadLapToLapAction } from "@/app/actions";
-import { AutoFileUploadForm } from "@/components/AutoFileUploadForm";
 import { LapCharts } from "@/components/LapCharts";
+import { LapToLapUploadForm } from "@/components/LapToLapUploadForm";
 import { PilotEvolutionChart } from "@/components/PilotEvolutionChart";
 import { PwaInstallButton } from "@/components/PwaInstallButton";
 import {
@@ -694,17 +693,7 @@ export async function SeasonPilotProfileView({ pilotSlug, seasonSlug }: { pilotS
                       <LapCharts laps={result.lapToLap.laps} />
                     </div>
                   ) : (
-                    <AutoFileUploadForm
-                      action={uploadLapToLapAction}
-                      buttonLabel="Enviar lap-to-lap"
-                      className="upload-form"
-                      hiddenFields={[
-                        { name: "resultId", value: result.id },
-                        { name: "returnTo", value: returnTo },
-                      ]}
-                      pendingLabel="Enviando lap-to-lap..."
-                      variant="dark"
-                    />
+                    <LapToLapUploadForm resultId={result.id} returnTo={returnTo} />
                   )}
                 </article>
               );

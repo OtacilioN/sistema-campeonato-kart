@@ -678,6 +678,17 @@ h3 {
   color: var(--danger);
 }
 
+.lap-upload-message {
+  background: var(--danger-soft);
+  border-radius: var(--radius-md);
+  color: var(--danger);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+  margin: 0;
+  padding: 10px 12px;
+}
+
 .battery-video-grid {
   display: grid;
   gap: 12px;

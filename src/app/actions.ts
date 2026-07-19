@@ -9,7 +9,7 @@ import { ensureUniqueReviewPilotNames, parseManualReviewRows, parseReviewRowsFro
 import { seasonRegulationFor } from "@/lib/domain/season-regulations";
 import { pilotSlug, preferredPilotName } from "@/lib/domain/text";
 import { parseBrazilianDateTime } from "@/lib/domain/time";
-import type { ReviewRow } from "@/lib/domain/types";
+import type { ParsedLapToLap, ReviewRow } from "@/lib/domain/types";
 import { parseYouTubeVideoLink } from "@/lib/domain/youtube";
 import { prisma } from "@/lib/prisma";
 
@@ -359,22 +359,51 @@ function batteryResultData(row: ReviewRow) {
   };
 }
 
-export async function uploadLapToLapAction(formData: FormData) {
-  const resultId = required(formData.get("resultId"), "resultado");
-  const returnTo = String(formData.get("returnTo") ?? "/");
+export type LapToLapUploadState = {
+  status: "idle" | "error";
+  message: string;
+};
+
+export async function uploadLapToLapAction(
+  _previousState: LapToLapUploadState,
+  formData: FormData,
+): Promise<LapToLapUploadState> {
+  const resultId = String(formData.get("resultId") ?? "").trim();
+  const returnTo = safeReturnPath(String(formData.get("returnTo") ?? "/"));
   const file = formData.get("file");
+
+  if (!resultId) {
+    return { status: "error", message: "Não foi possível identificar o resultado desta bateria." };
+  }
+
   if (!(file instanceof File) || file.size === 0) {
-    throw new Error("Selecione um PDF de lap-to-lap.");
+    return { status: "error", message: "Selecione um PDF de lap-to-lap." };
   }
 
   const result = await prisma.batteryResult.findUnique({
     where: { id: resultId },
     include: { pilot: true, lapToLap: true },
   });
-  if (!result) throw new Error("Resultado não encontrado.");
+  if (!result) {
+    return { status: "error", message: "O resultado desta bateria não foi encontrado." };
+  }
 
-  const { parseLapToLap, validateLapToLap } = await import("@/lib/domain/pdf");
-  const parsed = await parseLapToLap(Buffer.from(await file.arrayBuffer()));
+  let parsed: ParsedLapToLap;
+  try {
+    const { parseLapToLap } = await import("@/lib/domain/pdf");
+    parsed = await parseLapToLap(Buffer.from(await file.arrayBuffer()));
+  } catch (error) {
+    console.warn("[lap-to-lap] PDF não pôde ser processado", {
+      resultId,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return {
+      status: "error",
+      message: "Não foi possível ler este PDF. Confirme que ele é um relatório lap-to-lap válido e tente novamente.",
+    };
+  }
+
+  const { validateLapToLap } = await import("@/lib/domain/pdf");
   const validation = validateLapToLap({
     parsed,
     pilotName: result.pilot.fullName,
@@ -383,40 +412,55 @@ export async function uploadLapToLapAction(formData: FormData) {
     totalTime: result.totalTime,
   });
   if (!validation.ok) {
-    throw new Error(validation.messages.join(" "));
+    console.warn("[lap-to-lap] Arquivo rejeitado pela validação", {
+      resultId,
+      messages: validation.messages,
+    });
+    return { status: "error", message: validation.messages.join(" ") };
   }
 
-  await prisma.$transaction(async (tx) => {
-    const existing = await tx.lapToLap.findUnique({ where: { batteryResultId: resultId } });
-    if (existing) {
-      await tx.lap.deleteMany({ where: { lapToLapId: existing.id } });
-      await tx.lapToLap.delete({ where: { id: existing.id } });
-    }
+  try {
+    await prisma.$transaction(async (tx) => {
+      const existing = await tx.lapToLap.findUnique({ where: { batteryResultId: resultId } });
+      if (existing) {
+        await tx.lap.deleteMany({ where: { lapToLapId: existing.id } });
+        await tx.lapToLap.delete({ where: { id: existing.id } });
+      }
 
-    await tx.lapToLap.create({
-      data: {
-        batteryResultId: resultId,
-        pilotId: result.pilotId,
-        validationStatus: "VALIDATED",
-        extractedPilotName: parsed.pilotName,
-        extractedPilotNumber: parsed.pilotNumber,
-        extractedBestLapTime: parsed.bestLapTime,
-        extractedBestLapNumber: parsed.bestLapNumber,
-        extractedTotalTime: parsed.totalTime,
-        parsedPayload: parsed as unknown as Prisma.InputJsonValue,
-        laps: {
-          create: parsed.laps.map((lap) => ({
-            lapNumber: lap.lapNumber,
-            lapTime: lap.lapTime,
-            deltaBestLap: lap.deltaBestLap,
-            deltaCategory: lap.deltaCategory,
-            accumulatedTime: lap.accumulatedTime,
-            averageSpeed: lap.averageSpeed ? lap.averageSpeed.replace(",", ".") : null,
-          })),
+      await tx.lapToLap.create({
+        data: {
+          batteryResultId: resultId,
+          pilotId: result.pilotId,
+          validationStatus: "VALIDATED",
+          extractedPilotName: parsed.pilotName,
+          extractedPilotNumber: parsed.pilotNumber,
+          extractedBestLapTime: parsed.bestLapTime,
+          extractedBestLapNumber: parsed.bestLapNumber,
+          extractedTotalTime: parsed.totalTime,
+          parsedPayload: parsed as unknown as Prisma.InputJsonValue,
+          laps: {
+            create: parsed.laps.map((lap) => ({
+              lapNumber: lap.lapNumber,
+              lapTime: lap.lapTime,
+              deltaBestLap: lap.deltaBestLap,
+              deltaCategory: lap.deltaCategory,
+              accumulatedTime: lap.accumulatedTime,
+              averageSpeed: lap.averageSpeed ? lap.averageSpeed.replace(",", ".") : null,
+            })),
+          },
         },
-      },
+      });
     });
-  });
+  } catch (error) {
+    console.error("[lap-to-lap] Falha ao salvar arquivo validado", {
+      resultId,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return {
+      status: "error",
+      message: "Não foi possível salvar o lap-to-lap agora. Tente novamente em alguns instantes.",
+    };
+  }
 
   revalidatePath(returnTo);
   redirect(returnTo);
