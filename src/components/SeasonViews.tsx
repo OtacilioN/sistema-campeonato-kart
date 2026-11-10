@@ -17,7 +17,7 @@ import {
   VzChip,
   VzIcon,
 } from "@/components/VelozesUI";
-import { batteryPathSlug, batteryStatusLabel, ordinal, resultStatusLabel } from "@/lib/domain/labels";
+import { batteryPathSlug, batteryStatusLabel, ordinal, resultStatusLabel, shortBatteryMonthLabel } from "@/lib/domain/labels";
 import { googleCalendarBatteryUrl } from "@/lib/domain/calendar";
 import { formatDateTime } from "@/lib/domain/time";
 import { getActiveSeason, getPilotProfile, getPublicRanking, getSeasonBySlug } from "@/lib/data/public";
@@ -33,11 +33,6 @@ function contextPath(seasonSlug: string | undefined, path: string) {
 
 function pilotPath(pilotSlug: string, seasonSlug?: string) {
   return seasonSlug ? `/temporadas/${seasonSlug}/pilotos/${pilotSlug}` : `/pilotos/${pilotSlug}`;
-}
-
-function batteryLabel(number: number) {
-  const labels = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun 1", "Jun 2"];
-  return labels[number - 1] ?? `B${number}`;
 }
 
 function eventDate(value: Date | null | undefined) {
@@ -401,6 +396,7 @@ export async function SeasonRankingView({
   if (seasonSlug && !season) notFound();
   const query = await searchParams;
   const confirmedBatteries = season?.batteries.filter((battery) => battery.status === "CONFIRMED") ?? [];
+  const batteryLabels = new Map(confirmedBatteries.map((battery) => [battery.number, shortBatteryMonthLabel(battery.monthLabel, battery.number)]));
   const regulation = seasonRegulationFor(season);
   const requestedBattery = Number(query?.bateria);
   const selectedBatteryNumber = confirmedBatteries.some((battery) => battery.number === requestedBattery) ? requestedBattery : null;
@@ -422,7 +418,7 @@ export async function SeasonRankingView({
       <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 2 }}>
         {confirmedBatteries.map((battery) => (
           <VzChip active={selectedBatteryNumber === battery.number} href={`${rankingPath}?bateria=${battery.number}`} key={battery.id}>
-            {battery.monthLabel ?? batteryLabel(battery.number)}
+            {battery.monthLabel ?? `B${battery.number}`}
           </VzChip>
         ))}
         <VzChip active={!selectedBatteryNumber} href={rankingPath}>Geral</VzChip>
@@ -450,7 +446,7 @@ export async function SeasonRankingView({
                 <span className="ranking-months">
                   {(entry ? [entry] : pilot.entries).map((item) => (
                     <small className={item.discarded ? "discarded" : ""} key={`${pilot.pilotId}-${item.batteryNumber}`}>
-                      {batteryLabel(item.batteryNumber)} <b>{item.finalPoints}</b>
+                      {batteryLabels.get(item.batteryNumber) ?? `B${item.batteryNumber}`} <b>{item.finalPoints}</b>
                     </small>
                   ))}
                 </span>

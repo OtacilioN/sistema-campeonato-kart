@@ -6,6 +6,18 @@ export function batteryPathSlug(number: number) {
   return `${number}-bateria`;
 }
 
+export function shortBatteryMonthLabel(monthLabel: string | null | undefined, number: number) {
+  const label = monthLabel?.trim();
+  if (!label) return `B${number}`;
+
+  const months: Record<string, string> = {
+    janeiro: "Jan", fevereiro: "Fev", março: "Mar", abril: "Abr",
+    maio: "Mai", junho: "Jun", julho: "Jul", agosto: "Ago",
+    setembro: "Set", outubro: "Out", novembro: "Nov", dezembro: "Dez",
+  };
+  return label.replace(/^[\p{L}]+/u, (month) => months[month.toLocaleLowerCase("pt-BR")] ?? month);
+}
+
 export function batteryStatusLabel(status: string) {
   const labels: Record<string, string> = {
     PLANNED: "Planejada",
