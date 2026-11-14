@@ -7,11 +7,11 @@ import { Prisma } from "@prisma/client";
 import { ADMIN_COOKIE, isAdminCookieValid } from "@/lib/admin-auth";
 import { ensureUniqueReviewPilotNames, parseManualReviewRows, parseReviewRowsFromForm, reviewPayloadFromOfficialReport, type ReviewPayload } from "@/lib/domain/review";
 import { seasonRegulationFor } from "@/lib/domain/season-regulations";
-import { pilotSlug, preferredPilotName } from "@/lib/domain/text";
 import { parseBrazilianDateTime } from "@/lib/domain/time";
 import type { ParsedLapToLap, ReviewRow } from "@/lib/domain/types";
 import { parseYouTubeVideoLink } from "@/lib/domain/youtube";
 import { prisma } from "@/lib/prisma";
+import { ensureUniqueResolvedPilots, resolvePilot } from "@/lib/pilot-identity";
 
 const MAX_LAP_TO_LAP_FILE_SIZE_BYTES = 3 * 1024 * 1024;
 
@@ -255,9 +255,10 @@ export async function confirmReviewAction(formData: FormData) {
       const resolvedRows: Array<{ row: ReviewRow; pilotId: string }> = [];
 
       for (const row of rows) {
-        const pilot = await upsertPilot(tx, row.fullName, row.uf);
+        const pilot = await resolvePilot(tx, row.fullName, row.uf);
         resolvedRows.push({ row, pilotId: pilot.id });
       }
+      ensureUniqueResolvedPilots(resolvedRows);
 
       await tx.batteryResult.deleteMany({
         where: {
@@ -310,7 +311,8 @@ export async function confirmReviewAction(formData: FormData) {
       redirect(`/admin/revisoes/${reviewId}`);
     }
 
-    throw error;
+    await rejectReviewConfirmation(reviewId, review.messages, readableErrorMessage(error));
+    redirect(`/admin/revisoes/${reviewId}`);
   }
 
   revalidatePath("/");
@@ -369,7 +371,7 @@ export type LapToLapUploadState = {
 async function findBatteryResultForLapToLap(resultId: string) {
   return prisma.batteryResult.findUnique({
     where: { id: resultId },
-    include: { pilot: true, lapToLap: true },
+    include: { pilot: { include: { aliases: true } }, lapToLap: true },
   });
 }
 
@@ -430,6 +432,7 @@ export async function uploadLapToLapAction(
   const validation = validateLapToLap({
     parsed,
     pilotName: result.pilot.fullName,
+    pilotAliases: result.pilot.aliases.map((alias) => alias.name),
     pilotNumber: result.pilotNumber,
     bestLapTime: result.bestLapTime,
     totalTime: result.totalTime,
@@ -613,32 +616,4 @@ function safeReturnPath(path: string) {
 
 function videoRedirectPath(path: string, status: string) {
   return `${path}?video=${status}#videos`;
-}
-
-async function upsertPilot(tx: Prisma.TransactionClient, fullName: string, uf: string | null) {
-  const slug = pilotSlug(fullName);
-  const existingByName = await tx.pilot.findUnique({ where: { fullName } });
-  const existing = existingByName ?? await tx.pilot.findUnique({ where: { slug } });
-
-  if (existing) {
-    const nextFullName = preferredPilotName(existing.fullName, fullName);
-
-    return tx.pilot.update({
-      where: { id: existing.id },
-      data: {
-        active: true,
-        fullName: nextFullName,
-        uf: existing.uf ?? uf,
-        slug: pilotSlug(nextFullName),
-      },
-    });
-  }
-
-  return tx.pilot.create({
-    data: {
-      fullName,
-      uf,
-      slug,
-    },
-  });
 }

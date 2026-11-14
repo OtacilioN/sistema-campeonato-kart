@@ -8,6 +8,10 @@ Glossario do dominio do app Velozes, um sistema para acompanhamento de campeonat
 Pessoa identificada por nome completo que participa das baterias do campeonato e tem resultados, pontuacao, ranking e historico associados ao seu nome. UF e um dado auxiliar opcional vindo do documento, mas nao faz parte da identidade do piloto. Dois pilotos com o mesmo nome completo sao conflito, mesmo quando o documento informa UFs diferentes.
 _Avoid_: Competidor, corredor, driver
 
+**Alias de Piloto**:
+Nome alternativo confirmado associado a um unico piloto, usado para reconhecer futuras importacoes e lap-to-laps. Acentos, caixa e espacos sao normalizados. Nomes apenas parecidos nao criam uma associacao automatica, e UF nao define a identidade.
+_Avoid_: Novo piloto para cada variacao de nome
+
 **Bateria**:
 Unidade numerada de uma temporada que pode existir como evento planejado antes do resultado confirmado e depois gerar pontuacao dos pilotos. Sua identidade publica principal e ordinal, como "1ª Bateria" ou "7ª Bateria"; mes e apenas um rotulo auxiliar.
 _Avoid_: Corrida, etapa

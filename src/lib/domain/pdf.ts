@@ -182,13 +182,16 @@ export async function parseLapToLap(input: Buffer | Uint8Array | File): Promise<
 export function validateLapToLap(input: {
   parsed: ParsedLapToLap;
   pilotName: string;
+  pilotAliases?: string[];
   pilotNumber: number | null;
   bestLapTime: string | null;
   totalTime: string | null;
 }): LapValidationResult {
   const messages: string[] = [];
 
-  if (!input.parsed.pilotName || !namesMatch(input.pilotName, input.parsed.pilotName)) {
+  const acceptedNames = [input.pilotName, ...(input.pilotAliases ?? [])];
+  const extractedName = input.parsed.pilotName;
+  if (!extractedName || !acceptedNames.some((name) => namesMatch(name, extractedName))) {
     messages.push("Nome do lap-to-lap não confere.");
   }
   if (input.bestLapTime && input.parsed.bestLapTime !== input.bestLapTime) {

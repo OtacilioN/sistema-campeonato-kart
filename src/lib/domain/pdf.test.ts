@@ -109,6 +109,24 @@ DATA/HORA: 14/11/2026 19:08:24`);
 });
 
 describe("lap-to-lap parser", () => {
+  it("accepts a confirmed pilot alias but still checks the result's number and times", () => {
+    const parsed = {
+      pilotName: "Bruno Marcos", pilotNumber: 11, batteryLabel: "BATERIA 06", batteryNumber: 6,
+      occurredAtText: null, laps: [], bestLapTime: "01:11.034", bestLapNumber: 7,
+      totalTime: "00:15:33.125", rawText: "",
+    };
+    const input = {
+      parsed, pilotName: "Bruno Marcos Santos Lima", pilotNumber: 11,
+      bestLapTime: "01:11.034", totalTime: "00:15:33.125",
+    };
+    expect(validateLapToLap(input).ok).toBe(false);
+    expect(validateLapToLap({ ...input, pilotAliases: ["Bruno Marcos"] }).ok).toBe(true);
+    expect(validateLapToLap({
+      ...input, pilotAliases: ["Bruno Marcos"], pilotNumber: 12, totalTime: "00:15:00.000",
+    }).messages).toEqual(["Tempo total do lap-to-lap não confere.", "Número do piloto no lap-to-lap não confere."]);
+    expect(validateLapToLap({ ...input, pilotAliases: ["Bruno Marcos"], bestLapTime: "01:10.000" }).ok).toBe(false);
+  });
+
   it("extracts and validates the sample LapToLapReport.pdf", async () => {
     const parsed = await parseLapToLap(await readFile("docs/pdfsExemplo/LapToLapReport.pdf"));
 

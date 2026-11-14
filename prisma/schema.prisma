@@ -19,8 +19,20 @@ model Pilot {
   results     BatteryResult[]
   lapToLaps   LapToLap[]
   disqualifications SeasonDisqualification[]
+  aliases     PilotAlias[]
 
   @@unique([fullName])
+}
+
+model PilotAlias {
+  id             String   @id @default(cuid())
+  pilotId        String
+  name           String
+  normalizedName String   @unique
+  createdAt      DateTime @default(now())
+  pilot          Pilot    @relation(fields: [pilotId], references: [id], onDelete: Cascade)
+
+  @@index([pilotId])
 }
 
 model Season {

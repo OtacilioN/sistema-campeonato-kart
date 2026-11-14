@@ -100,6 +100,14 @@ npm run prisma:generate
 npm run prisma:validate
 ```
 
+## Nomes alternativos de pilotos
+
+`PilotAlias` registra nomes alternativos confirmados para um mesmo piloto. Ao confirmar uma revisão de resultado, o sistema procura pelo nome, pelo slug ou pelo alias normalizado (sem diferenças de acentuação, caixa ou espaços). Nomes apenas parecidos não são associados automaticamente.
+
+As associações preservam o ID, a URL pública e o apelido do cadastro histórico. Se duas linhas da revisão apontarem para o mesmo piloto, a confirmação é recusada antes de alterar os resultados. Os aliases também são aceitos na validação de nomes dos arquivos lap-to-lap; número e tempos continuam sendo conferidos.
+
+A correção das quatro duplicidades de novembro de 2026 está documentada em `scripts/merge-november-pilot-aliases.sql`. O script contém verificações dos registros e das dependências e deve ser executado em uma única transação, após a migração `20261114230000_pilot_aliases`.
+
 ## Licença
 
 Open source sob licença MIT.
