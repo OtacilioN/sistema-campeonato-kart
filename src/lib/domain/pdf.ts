@@ -46,26 +46,24 @@ function parseHeader(text: string) {
 }
 
 function parseGap(tokens: string[]) {
-  const first = tokens.shift();
-  if (!first) return null;
-  if (first === "---") return first;
-  if (/^\d{2}:\d{2}\.\d{3}$/.test(first)) return first;
-  if (/^-\d+$/.test(first) && tokens[0]?.startsWith("volta")) {
-    return `${first} ${tokens.shift()}`;
-  }
-  return first;
+  const match = tokens.join(" ").match(/^(---|\d{1,2}:\d{2}\.\d{3}|-\s*\d+\s+(?:Lap(?:\(s\)|s)?|voltas?))(?=\s|$)/i);
+  if (!match) return null;
+  tokens.splice(0, match[1].split(/\s+/).length);
+  return match[1];
 }
 
 function parseOfficialRow(line: string): ReviewRow | null {
   const match = line.match(
-    /^(NC|\d+)\s+(\d+)\s+(.+?)\s+(\d+)\s+(\d{2}:\d{2}\.\d{3})\s+(\d{2}:\d{2}:\d{2}\.\d{3})\s+(.+?)\s+(\d{2}:\d{2}\.\d{3})\s+(\d+)\s+([\d,]+)(?:\s+([A-Z]{2}))?$/,
+    /^(NC|\d+)\s+(\d+)\s+(.+?)\s+(\d+)\s+(\d{2}:\d{2}\.\d{3})\s+((?:\d{2}:)?\d{2}:\d{2}\.\d{3})\s+(.+?)\s+(\d{2}:\d{2}\.\d{3})\s+(\d+)\s+([\d,]+)(?:\s+([A-Z]{2}))?$/,
   );
   if (!match) return null;
 
-  const [, rawPosition, rawNumber, rawName, rawBestLapNumber, bestLapTime, totalTime, rawGaps, lastLapTime, rawTotalLaps, averageSpeed, uf] = match;
+  const [, rawPosition, rawNumber, rawName, rawBestLapNumber, bestLapTime, rawTotalTime, rawGaps, lastLapTime, rawTotalLaps, averageSpeed, uf] = match;
+  const totalTime = rawTotalTime.length === 9 ? `00:${rawTotalTime}` : rawTotalTime;
   const gapTokens = rawGaps.split(/\s+/);
   const gapToLeader = parseGap(gapTokens);
   const gapToPrevious = parseGap(gapTokens);
+  if (!gapToLeader || !gapToPrevious || gapTokens.length) return null;
   const status = rawPosition === "NC" ? "NC" : "CLASSIFIED";
   const position = rawPosition === "NC" ? null : Number(rawPosition);
   const positionPoints = pointsForPosition(position, status);
@@ -104,8 +102,17 @@ export function parseOfficialReportText(rawText: string, regulation: SeasonRegul
   const bestLapMatch = rawText.match(/Melhor volta:\s*(.+?)\s+\((\d{2}:\d{2}\.\d{3})\)/i);
   const bestLapPilotName = bestLapMatch?.[1]?.trim() ?? null;
   const bestLapTime = bestLapMatch?.[2] ?? null;
-  const rows = header.lines.map(parseOfficialRow).filter((row): row is ReviewRow => Boolean(row));
+  const rows: ReviewRow[] = [];
   const messages: string[] = [];
+
+  for (const line of header.lines) {
+    const row = parseOfficialRow(line);
+    if (row) {
+      rows.push(row);
+    } else if (/^(?:[A-Z]{2,3}|\d+)\s+\d+\s+\S/.test(line)) {
+      messages.push(`Linha de resultado não reconhecida. Confira os dados antes de confirmar: ${line}`);
+    }
+  }
 
   for (const row of rows) {
     if (row.status !== "NC" && bestLapTime && row.bestLapTime === bestLapTime) {
